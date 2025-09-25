@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h" // Required for memcmp()
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +45,11 @@ CAN_HandleTypeDef hcan;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+// --- UART Interrupt Variables ---
+#define MSG_LEN 8 // Length of our "Success!" message
+char tx_message[MSG_LEN + 1] = "Success!"; // +1 for null terminator, which we don't send
+uint8_t rx_buffer[MSG_LEN];
+volatile uint8_t rx_complete_flag = 0; // Flag to signal when reception is done
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,24 +99,23 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   CAN_TxHeaderTypeDef txHeader;
-    uint8_t txData[4];   // CAN frame can carry up to 8 bytes
-    uint32_t txMailbox;  // Mailbox used by HAL
+  uint8_t txData[2];
+  uint32_t txMailbox;
 
-    txHeader.StdId = 0x123;       // Standard 11-bit ID
-    txHeader.ExtId = 0x01;        // Not used for standard IDs
-    txHeader.RTR = CAN_RTR_DATA;  // This is a data frame
-    txHeader.IDE = CAN_ID_STD;    // Standard ID
-    txHeader.DLC = 2;             // Data length (0–8 bytes)
-    txHeader.TransmitGlobalTime = DISABLE;
+  txHeader.StdId = 0x123;
+  txHeader.RTR = CAN_RTR_DATA;
+  txHeader.IDE = CAN_ID_STD;
+  txHeader.DLC = 2;
+  txHeader.TransmitGlobalTime = DISABLE;
 
+  if (HAL_CAN_Start(&hcan) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-    // Add this line to activate the CAN peripheral
-    if (HAL_CAN_Start(&hcan) != HAL_OK)
-    {
-      /* Start Error */
-      Error_Handler();
-    }
-
+  // --- START THE FIRST UART RECEPTION WITH INTERRUPT ---
+  // This tells the UART hardware to start listening in the background.
+  HAL_UART_Receive_IT(&huart2, rx_buffer, MSG_LEN);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,14 +125,33 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-      txData[0] = 0x12;
-      txData[1] = 0x34;
-      HAL_StatusTypeDef can_result;
-      can_result = HAL_CAN_AddTxMessage(&hcan, &txHeader, txData, &txMailbox);
+    // 1. Transmit the UART message.
+    HAL_UART_Transmit(&huart2, (uint8_t*)tx_message, MSG_LEN, 100);
 
-	  HAL_Delay(1000);
+    // 2. Wait for the receive interrupt to set our flag.
+    //    (The HAL_UART_RxCpltCallback function below will set this flag to 1)
+    while (rx_complete_flag == 0)
+    {
+      // Wait here until the interrupt signals that reception is complete.
+    }
 
+    // 3. Reception is done. Reset the flag for the next loop.
+    rx_complete_flag = 0;
+
+    // 4. Check if the received data matches what we sent.
+    if (memcmp(tx_message, rx_buffer, MSG_LEN) == 0)
+    {
+      // If the data matches, toggle the LED to confirm success.
+      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    }
+
+    // 5. Send a CAN message. This will now work because of the Loopback Mode fix.
+    txData[0] = 0xAA;
+    txData[1] = 0x55;
+    HAL_CAN_AddTxMessage(&hcan, &txHeader, txData, &txMailbox);
+
+    // 6. Delay to make the LED blink visible.
+    HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -276,7 +298,25 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Reception Complete Callback.
+  * This function is automatically called by the HAL driver when the
+  * requested number of bytes has been received via interrupt.
+  * @param  huart: UART handle
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  // Check if the interrupt is from our UART peripheral
+  if (huart->Instance == USART2)
+  {
+    // Set the flag to signal the main loop that data is ready
+    rx_complete_flag = 1;
 
+    // IMPORTANT: Re-arm the interrupt to be ready for the next message
+    HAL_UART_Receive_IT(&huart2, rx_buffer, MSG_LEN);
+  }
+}
 /* USER CODE END 4 */
 
 /**
@@ -293,8 +333,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
