@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h" // Required for memcmp()
+#include "string.h" // Required for memset()
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define RX_BUFFER_SIZE 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,10 +46,6 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // --- UART Interrupt Variables ---
-#define MSG_LEN 8 // Length of our "Success!" message
-char tx_message[MSG_LEN + 1] = "Success!"; // +1 for null terminator, which we don't send
-uint8_t rx_buffer[MSG_LEN];
-volatile uint8_t rx_complete_flag = 0; // Flag to signal when reception is done
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,7 +54,7 @@ static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void send_at_command(const uint8_t* hex_cmd, uint16_t len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -90,6 +86,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  // copied from other at code
+
 
   /* USER CODE END SysInit */
 
@@ -99,9 +97,75 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   CAN_TxHeaderTypeDef txHeader;
-  uint8_t txData[2];
+  uint32_t txData[2];
   uint32_t txMailbox;
 
+  uint8_t cmd_enter_config[] = {0x2B, 0x2B, 0x2B, 0x0d, 0x0a};
+
+  // AT+MODE0\r\n
+  uint8_t cmd_mode1[] = {0x41, 0x54, 0x2B, 0x4D, 0x4F, 0x44, 0x45, 0x31, 0x0D, 0x0A};
+
+  // AT+LEVEL7\r\n
+  uint8_t cmd_level7[] = {0x41, 0x54, 0x2B, 0x4C, 0x45, 0x56, 0x45, 0x4C, 0x37, 0x0D, 0x0A};
+
+  // AT+CHANNEL03\r\n
+  uint8_t cmd_channel03[] = {0x41, 0x54, 0x2B, 0x43, 0x48, 0x41, 0x4E, 0x4E, 0x45, 0x4C, 0x30, 0x33, 0x0D, 0x0A};
+
+  // AT+MAC0a,02\r\n
+  uint8_t cmd_mac0a02[] = {0x41, 0x54, 0x2B, 0x4D, 0x41, 0x43, 0x30, 0x61, 0x2C, 0x30, 0x32, 0x0D, 0x0A};
+  uint8_t cmd_sf12[] = {0x41, 0x54, 0x2B, 0x53, 0x46, 0x31, 0x32, 0x0D, 0x0A};
+
+  // AT+POWE22\r\n
+  uint8_t cmd_powe22[] = {0x41, 0x54, 0x2B, 0x50, 0x4F, 0x57, 0x45, 0x32, 0x32, 0x0D, 0x0A};
+
+  // AT
+
+
+  // AT+RESET\r\n
+  uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
+
+
+  //
+  HAL_Delay(3000);
+  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+  HAL_Delay(6000); // A small delay is often good practice after commands
+
+  // Set transmission mode
+  send_at_command(cmd_mode1, sizeof(cmd_mode1));
+  HAL_Delay(6000);
+
+  // Set air data rate level
+  send_at_command(cmd_level7, sizeof(cmd_level7));
+  HAL_Delay(6000);
+
+  // Set frequency channel
+  send_at_command(cmd_channel03, sizeof(cmd_channel03));
+  HAL_Delay(6000);
+
+  // Set device address
+  send_at_command(cmd_mac0a02, sizeof(cmd_mac0a02));
+  HAL_Delay(6000);
+
+  // Set TX power
+  send_at_command(cmd_powe22, sizeof(cmd_powe22));
+  HAL_Delay(6000);
+
+  //send SF
+  send_at_command(cmd_sf12, sizeof(cmd_sf12));
+  HAL_Delay(6000);
+  // check AT for OK
+
+  // Reset the module to apply settings
+  send_at_command(cmd_reset, sizeof(cmd_reset));
+  HAL_Delay(6000); // A longer delay after reset is recommended
+  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+  HAL_Delay(6000);
+  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+  HAL_Delay(6000);
+  for (int i =0; i < 10; i++){
+	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  HAL_Delay(50);
+  }
   txHeader.StdId = 0x123;
   txHeader.RTR = CAN_RTR_DATA;
   txHeader.IDE = CAN_ID_STD;
@@ -114,8 +178,10 @@ int main(void)
   }
 
   // --- START THE FIRST UART RECEPTION WITH INTERRUPT ---
-  // This tells the UART hardware to start listening in the background.
-  HAL_UART_Receive_IT(&huart2, rx_buffer, MSG_LEN);
+  // This tells the UART hardware to start listening for the very first byte.
+  // The interrupt callback will handle receiving all subsequent bytes.
+  //HAL_UART_Receive_IT(&huart2, &rx_char, 1);
+  //uint8_t rx_buffer_main[RX_BUFFER_SIZE];
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,32 +192,14 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     // 1. Transmit the UART message.
-    HAL_UART_Transmit(&huart2, (uint8_t*)tx_message, MSG_LEN, 100);
-
-    // 2. Wait for the receive interrupt to set our flag.
-    //    (The HAL_UART_RxCpltCallback function below will set this flag to 1)
-    while (rx_complete_flag == 0)
-    {
-      // Wait here until the interrupt signals that reception is complete.
-    }
-
-    // 3. Reception is done. Reset the flag for the next loop.
-    rx_complete_flag = 0;
-
-    // 4. Check if the received data matches what we sent.
-    if (memcmp(tx_message, rx_buffer, MSG_LEN) == 0)
-    {
-      // If the data matches, toggle the LED to confirm success.
-      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    }
-
-    // 5. Send a CAN message. This will now work because of the Loopback Mode fix.
-    txData[0] = 0xAA;
-    txData[1] = 0x55;
-    HAL_CAN_AddTxMessage(&hcan, &txHeader, txData, &txMailbox);
-
-    // 6. Delay to make the LED blink visible.
-    HAL_Delay(500);
+	uint8_t lora_message[] = {0x0a, 0x01, 0x01, 0x74, 0x69, 0x6D};
+	for (int i =0; i <5; i++){
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		HAL_Delay(100);
+	}
+	send_at_command(lora_message, sizeof(lora_message));
+	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    HAL_Delay(5000); // Shortened delay for more frequent checks
   }
   /* USER CODE END 3 */
 }
@@ -247,7 +295,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -300,22 +348,16 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 /**
   * @brief  Reception Complete Callback.
-  * This function is automatically called by the HAL driver when the
-  * requested number of bytes has been received via interrupt.
+  * This function is automatically called by the HAL driver every time
+  * a single byte is received via interrupt.
   * @param  huart: UART handle
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  // Check if the interrupt is from our UART peripheral
-  if (huart->Instance == USART2)
-  {
-    // Set the flag to signal the main loop that data is ready
-    rx_complete_flag = 1;
 
-    // IMPORTANT: Re-arm the interrupt to be ready for the next message
-    HAL_UART_Receive_IT(&huart2, rx_buffer, MSG_LEN);
-  }
+
+void send_at_command(const uint8_t* hex_cmd, uint16_t len) {
+    // Buffer to hold the command plus the required "\r\n"
+	HAL_UART_Transmit(&huart2, (uint8_t*)hex_cmd, len, 100);
 }
 /* USER CODE END 4 */
 
