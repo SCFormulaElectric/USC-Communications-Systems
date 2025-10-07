@@ -45,7 +45,231 @@ CAN_HandleTypeDef hcan;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
 // --- UART Interrupt Variables ---
+uint8_t FinalData[20];   // max amount of rx data before processing
+uint8_t RxData[20];      // storing rx data
+uint8_t temp[100];
+volatile int indx = 0;            // counting bytes
+volatile int message_received_flag = 0;    // marks message completion
+int MAX_MESSAGE_LENGTH = 20;
+
+// --- CAN Interrupt Variables --
+int CAN_received = 0;   // marks when to send CAN via UART
+CAN_TxHeaderTypeDef pHeader; //declare a specific header for message transmittions
+CAN_RxHeaderTypeDef pRxHeader; //declare header for message reception
+CAN_FilterTypeDef sFilterConfig; //declare CAN filter structure
+
+
+void toggle_LED() {
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	HAL_Delay(100);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+}
+
+
+
+void AT_Config(void) {
+	 // AT configuration
+
+	  HAL_UART_Receive_IT(&huart2, temp, 1);   // interrupt initialization
+
+	  // +++ to AT mode
+	  uint8_t cmd_enter_config[] = {0x2B, 0x2B, 0x2B, 0x0d, 0x0a};
+
+	  // AT+MODE0\r\n
+	  uint8_t cmd_mode1[] = {0x41, 0x54, 0x2B, 0x4D, 0x4F, 0x44, 0x45, 0x31, 0x0D, 0x0A};
+
+	  // AT+LEVEL7\r\n
+	  uint8_t cmd_level7[] = {0x41, 0x54, 0x2B, 0x4C, 0x45, 0x56, 0x45, 0x4C, 0x37, 0x0D, 0x0A};
+
+	  // AT+CHANNEL03\r\n
+	  uint8_t cmd_channel03[] = {0x41, 0x54, 0x2B, 0x43, 0x48, 0x41, 0x4E, 0x4E, 0x45, 0x4C, 0x30, 0x33, 0x0D, 0x0A};
+
+	  // AT+MAC0a,02\r\n
+	  uint8_t cmd_mac0a02[] = {0x41, 0x54, 0x2B, 0x4D, 0x41, 0x43, 0x30, 0x61, 0x2C, 0x30, 0x32, 0x0D, 0x0A};
+	  uint8_t cmd_sf12[] = {0x41, 0x54, 0x2B, 0x53, 0x46, 0x31, 0x32, 0x0D, 0x0A};
+
+	  // AT+POWE22\r\n
+	  uint8_t cmd_powe22[] = {0x41, 0x54, 0x2B, 0x50, 0x4F, 0x57, 0x45, 0x32, 0x32, 0x0D, 0x0A};
+
+	    // AT+RESET\r\n
+	    uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
+
+	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+	  // should receive "Entry AT\r\n" or something
+	  // HAL_Delay(6000); // A small delay is often good practice after commands
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+		indx = 0;
+
+	  // Set transmission mode
+	  send_at_command(cmd_mode1, sizeof(cmd_mode1));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  // Set air data rate level
+	  send_at_command(cmd_level7, sizeof(cmd_level7));
+	  //HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  // Set frequency channel
+	  send_at_command(cmd_channel03, sizeof(cmd_channel03));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  // Set device address
+	  send_at_command(cmd_mac0a02, sizeof(cmd_mac0a02));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  // Set TX power
+	  send_at_command(cmd_powe22, sizeof(cmd_powe22));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  //send SF
+	  send_at_command(cmd_sf12, sizeof(cmd_sf12));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+	  // check AT for OK
+
+	  // Reset the module to apply settings
+	  send_at_command(cmd_reset, sizeof(cmd_reset));
+	  // HAL_Delay(6000); // A longer delay after reset is recommended
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
+	  // HAL_Delay(6000);
+	  while (message_received_flag == 0) {  }
+	  toggle_LED();
+	    message_received_flag = 0;
+	    indx = 0;
+
+
+}
+
+void CAN_Config(void) {
+	// CAN Initialization
+
+	  uint8_t bigData[20] = { /* ... */ };
+	  uint8_t chunk[8];
+
+	  CAN_TxHeaderTypeDef txHeader;
+		  // uint8_t txData[20];
+		  uint32_t txMailbox;
+
+		  txHeader.StdId = 0x123;
+		  txHeader.RTR = CAN_RTR_DATA;
+		  txHeader.IDE = CAN_ID_STD;
+		  txHeader.DLC = 2;			// sending 16
+		  txHeader.TransmitGlobalTime = DISABLE;
+
+		// https://github.com/timsonater/stm32-CAN-bus-example-HAL-API/blob/master/main.c
+
+		pHeader.DLC=1; //give message size of 1 byte
+		pHeader.IDE=CAN_ID_STD; //set identifier to standard
+		pHeader.RTR=CAN_RTR_DATA; //set data type to remote transmission request?
+		pHeader.StdId=0x244; //define a standard identifier, used for message identification by filters (switch this for the other microcontroller)
+
+		//filter one (stack light blink)
+		sFilterConfig.FilterFIFOAssignment=CAN_FILTER_FIFO0; //set fifo assignment
+		sFilterConfig.FilterIdHigh=0x245<<5; //the ID that the filter looks for (switch this for the other microcontroller)
+		sFilterConfig.FilterIdLow=0;
+		sFilterConfig.FilterMaskIdHigh=0;
+		sFilterConfig.FilterMaskIdLow=0;
+		sFilterConfig.FilterScale=CAN_FILTERSCALE_32BIT; //set filter scale
+		sFilterConfig.FilterActivation=ENABLE;
+
+		HAL_CAN_ConfigFilter(&hcan, &sFilterConfig); //configure CAN filter
+
+	  if (HAL_CAN_Start(&hcan) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+	  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); //enable interrupts
+
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+		uint8_t received_byte = temp[0];
+
+		// if ends with \n, then message complete
+		if (received_byte == 0x0a) {
+			message_received_flag = 1;
+		}
+		// if not complete message or not max length, store it
+		if (indx < (MAX_MESSAGE_LENGTH - 1) && message_received_flag == 0) { // Leave 1 byte for null terminator
+			RxData[indx] = received_byte;
+			indx++;
+		}
+		else if (indx >= (MAX_MESSAGE_LENGTH - 1)) {
+			// Buffer overflow occurred before newline, treat as error/reset
+			indx = 0;
+		}
+
+		// Restart the interrupt
+		HAL_UART_Receive_IT(&huart2, temp, 1);
+
+}
+
+
+// Called automatically when a new frame lands in FIFO0
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t data[8];
+
+	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, data) != HAL_OK) {
+		Error_Handler(); // error handling
+	}
+
+	// Example: check ID, length, print/process
+	if (rxHeader.IDE == CAN_ID_STD) {
+		uint16_t id = rxHeader.StdId;     // 11-bit
+		uint8_t  dlc = rxHeader.DLC;      // 0..8
+		// TODO: handle 'data[0..dlc-1]'
+		send_at_command(data, dlc);
+			// CAN_received = 1;
+	}
+	else {
+		uint32_t id = rxHeader.ExtId;     // 29-bit
+		// TODO: handle extended ID
+	}
+
+
+}
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,119 +293,30 @@ void send_at_command(const uint8_t* hex_cmd, uint16_t len);
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-  // copied from other at code
-
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  CAN_TxHeaderTypeDef txHeader;
-  uint32_t txData[2];
-  uint32_t txMailbox;
 
-  uint8_t cmd_enter_config[] = {0x2B, 0x2B, 0x2B, 0x0d, 0x0a};
+  AT_Config();
 
-  // AT+MODE0\r\n
-  uint8_t cmd_mode1[] = {0x41, 0x54, 0x2B, 0x4D, 0x4F, 0x44, 0x45, 0x31, 0x0D, 0x0A};
-
-  // AT+LEVEL7\r\n
-  uint8_t cmd_level7[] = {0x41, 0x54, 0x2B, 0x4C, 0x45, 0x56, 0x45, 0x4C, 0x37, 0x0D, 0x0A};
-
-  // AT+CHANNEL03\r\n
-  uint8_t cmd_channel03[] = {0x41, 0x54, 0x2B, 0x43, 0x48, 0x41, 0x4E, 0x4E, 0x45, 0x4C, 0x30, 0x33, 0x0D, 0x0A};
-
-  // AT+MAC0a,02\r\n
-  uint8_t cmd_mac0a02[] = {0x41, 0x54, 0x2B, 0x4D, 0x41, 0x43, 0x30, 0x61, 0x2C, 0x30, 0x32, 0x0D, 0x0A};
-  uint8_t cmd_sf12[] = {0x41, 0x54, 0x2B, 0x53, 0x46, 0x31, 0x32, 0x0D, 0x0A};
-
-  // AT+POWE22\r\n
-  uint8_t cmd_powe22[] = {0x41, 0x54, 0x2B, 0x50, 0x4F, 0x57, 0x45, 0x32, 0x32, 0x0D, 0x0A};
-
-  // AT
-
-
-  // AT+RESET\r\n
-  uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
-
-
-  //
-  HAL_Delay(3000);
-  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-  HAL_Delay(6000); // A small delay is often good practice after commands
-
-  // Set transmission mode
-  send_at_command(cmd_mode1, sizeof(cmd_mode1));
-  HAL_Delay(6000);
-
-  // Set air data rate level
-  send_at_command(cmd_level7, sizeof(cmd_level7));
-  HAL_Delay(6000);
-
-  // Set frequency channel
-  send_at_command(cmd_channel03, sizeof(cmd_channel03));
-  HAL_Delay(6000);
-
-  // Set device address
-  send_at_command(cmd_mac0a02, sizeof(cmd_mac0a02));
-  HAL_Delay(6000);
-
-  // Set TX power
-  send_at_command(cmd_powe22, sizeof(cmd_powe22));
-  HAL_Delay(6000);
-
-  //send SF
-  send_at_command(cmd_sf12, sizeof(cmd_sf12));
-  HAL_Delay(6000);
-  // check AT for OK
-
-  // Reset the module to apply settings
-  send_at_command(cmd_reset, sizeof(cmd_reset));
-  HAL_Delay(6000); // A longer delay after reset is recommended
-  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-  HAL_Delay(6000);
-  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-  HAL_Delay(6000);
-  for (int i =0; i < 10; i++){
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	  HAL_Delay(50);
-  }
-  txHeader.StdId = 0x123;
-  txHeader.RTR = CAN_RTR_DATA;
-  txHeader.IDE = CAN_ID_STD;
-  txHeader.DLC = 2;
-  txHeader.TransmitGlobalTime = DISABLE;
-
-  if (HAL_CAN_Start(&hcan) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  CAN_Config();
 
   // --- START THE FIRST UART RECEPTION WITH INTERRUPT ---
   // This tells the UART hardware to start listening for the very first byte.
   // The interrupt callback will handle receiving all subsequent bytes.
   //HAL_UART_Receive_IT(&huart2, &rx_char, 1);
   //uint8_t rx_buffer_main[RX_BUFFER_SIZE];
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -191,17 +326,50 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  	if (message_received_flag)
+	  	{
+	  		// indx holds the number of bytes received (up to, but not including, the '\n')
+	  		memcpy(FinalData, RxData, indx);
+
+	  		// Toggle the LED to signal received
+	  		toggle_LED();
+
+	  		// clear the flag and reset index
+	  		message_received_flag = 0;
+	  		indx = 0;
+	  	}
+
+
     // 1. Transmit the UART message.
-	uint8_t lora_message[] = {0x0a, 0x01, 0x01, 0x74, 0x69, 0x6D};
+	  	// address 0a01, channel 3, "selena"
+	   uint8_t lora_message[] = {0x0A, 0x01, 0x03, 0x73, 0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
+	   send_at_command(lora_message, sizeof(lora_message));
+	   HAL_Delay(100);
+
+	   while (message_received_flag == 0) {  }
+	   toggle_LED();
+		message_received_flag = 0;
+		indx = 0;
+
+	/*
 	for (int i =0; i <5; i++){
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		HAL_Delay(100);
 	}
-	send_at_command(lora_message, sizeof(lora_message));
-	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    HAL_Delay(5000); // Shortened delay for more frequent checks
-  }
+	*/
+	  	/*
+	if (CAN_received) {
+
+
+		send_at_command(data, sizeof(lora_message));
+		  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		HAL_Delay(100); // Shortened delay for more frequent checks
+	}
+	*/
+
   /* USER CODE END 3 */
+  }
 }
 
 /**
