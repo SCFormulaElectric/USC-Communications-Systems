@@ -96,84 +96,27 @@ void AT_Config(void) {
 	    // AT+RESET\r\n
 	    uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
 
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // should receive "Entry AT\r\n" or something
-	  // HAL_Delay(6000); // A small delay is often good practice after commands
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-		indx = 0;
-
-	  // Set transmission mode
-	  send_at_command(cmd_mode1, sizeof(cmd_mode1));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+		// should receive "Entry AT\r\n" or something
+		// HAL_Delay(6000); // A small delay is often good practice after commands
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
+		// Set transmission mode
+	  send_command_and_wait(cmd_mode1, sizeof(cmd_mode1));
+		// HAL_Delay(6000);
 	  // Set air data rate level
-	  send_at_command(cmd_level7, sizeof(cmd_level7));
-	  //HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_level7, sizeof(cmd_level7));
 	  // Set frequency channel
-	  send_at_command(cmd_channel03, sizeof(cmd_channel03));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_channel03, sizeof(cmd_channel03));
 	  // Set device address
-	  send_at_command(cmd_mac0a02, sizeof(cmd_mac0a02));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_mac0a02, sizeof(cmd_mac0a02));
 	  // Set TX power
-	  send_at_command(cmd_powe22, sizeof(cmd_powe22));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_powe22, sizeof(cmd_powe22));
 	  //send SF
-	  send_at_command(cmd_sf12, sizeof(cmd_sf12));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
+	  send_command_and_wait(cmd_sf12, sizeof(cmd_sf12));
 	  // check AT for OK
-
 	  // Reset the module to apply settings
-	  send_at_command(cmd_reset, sizeof(cmd_reset));
-	  // HAL_Delay(6000); // A longer delay after reset is recommended
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
+	  send_command_and_wait(cmd_reset, sizeof(cmd_reset));
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
 
 
 }
@@ -279,6 +222,8 @@ static void MX_CAN_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void send_at_command(const uint8_t* hex_cmd, uint16_t len);
+void send_command_and_wait(const uint8_t* cmd, uint16_t len);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -347,7 +292,6 @@ int main(void)
 	   send_at_command(lora_message, sizeof(lora_message));
 	   HAL_Delay(100);
 
-	   while (message_received_flag == 0) {  }
 	   toggle_LED();
 		message_received_flag = 0;
 		indx = 0;
@@ -527,6 +471,15 @@ void send_at_command(const uint8_t* hex_cmd, uint16_t len) {
     // Buffer to hold the command plus the required "\r\n"
 	HAL_UART_Transmit(&huart2, (uint8_t*)hex_cmd, len, 100);
 }
+
+void send_command_and_wait(const uint8_t *cmd, uint16_t len) {
+	HAL_UART_Transmit(&huart2, (uint8_t*)cmd, len, 100);
+    while (message_received_flag == 0) {}
+    toggle_LED();
+    message_received_flag = 0;
+    indx = 0;
+}
+
 /* USER CODE END 4 */
 
 /**
