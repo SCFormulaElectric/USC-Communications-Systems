@@ -60,8 +60,8 @@ all: main-build
 main-build: LoRa_board.elf secondary-outputs
 
 # Tool invocations
-LoRa_board.elf LoRa_board.map: $(OBJS) $(USER_OBJS) /Users/chris/Desktop/USC-Communications-Systems/Lora-Code/LoRa_board/STM32F042F4PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "LoRa_board.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/chris/Desktop/USC-Communications-Systems/Lora-Code/LoRa_board/STM32F042F4PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRa_board.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+LoRa_board.elf LoRa_board.map: $(OBJS) $(USER_OBJS) /Users/chris/USC-Communications-Systems/Lora-Code/LoRa_board/STM32F042F4PX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "LoRa_board.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/Users/chris/USC-Communications-Systems/Lora-Code/LoRa_board/STM32F042F4PX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LoRa_board.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
