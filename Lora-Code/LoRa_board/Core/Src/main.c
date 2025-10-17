@@ -55,19 +55,21 @@ volatile int message_received_flag = 0;    // marks message completion
 int MAX_MESSAGE_LENGTH = 20;
 
 // --- CAN Interrupt Variables --
-int CAN_received = 0;   // marks when to send CAN via UART
+volatile int CAN_received = 0;   // marks when to send CAN via UART
+uint8_t CAN_rx_data[8];   // Global buffer for received CAN data
+uint8_t CAN_rx_len = 8;
 CAN_TxHeaderTypeDef pHeader; //declare a specific header for message transmittions
 CAN_RxHeaderTypeDef pRxHeader; //declare header for message reception
 CAN_FilterTypeDef sFilterConfig; //declare CAN filter structure
 
+void send_at_command(const uint8_t* hex_cmd, uint16_t len);
+void send_command_and_wait(const uint8_t* cmd, uint16_t len);
 
 void toggle_LED() {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	HAL_Delay(100);
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 }
-
-
 
 void AT_Config(void) {
 	 // AT configuration
@@ -96,84 +98,27 @@ void AT_Config(void) {
 	    // AT+RESET\r\n
 	    uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
 
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // should receive "Entry AT\r\n" or something
-	  // HAL_Delay(6000); // A small delay is often good practice after commands
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-		indx = 0;
-
-	  // Set transmission mode
-	  send_at_command(cmd_mode1, sizeof(cmd_mode1));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+		// should receive "Entry AT\r\n" or something
+		// HAL_Delay(6000); // A small delay is often good practice after commands
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
+		// Set transmission mode
+	  send_command_and_wait(cmd_mode1, sizeof(cmd_mode1));
+		// HAL_Delay(6000);
 	  // Set air data rate level
-	  send_at_command(cmd_level7, sizeof(cmd_level7));
-	  //HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_level7, sizeof(cmd_level7));
 	  // Set frequency channel
-	  send_at_command(cmd_channel03, sizeof(cmd_channel03));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_channel03, sizeof(cmd_channel03));
 	  // Set device address
-	  send_at_command(cmd_mac0a02, sizeof(cmd_mac0a02));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_mac0a02, sizeof(cmd_mac0a02));
 	  // Set TX power
-	  send_at_command(cmd_powe22, sizeof(cmd_powe22));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
+	  send_command_and_wait(cmd_powe22, sizeof(cmd_powe22));
 	  //send SF
-	  send_at_command(cmd_sf12, sizeof(cmd_sf12));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
+	  send_command_and_wait(cmd_sf12, sizeof(cmd_sf12));
 	  // check AT for OK
-
 	  // Reset the module to apply settings
-	  send_at_command(cmd_reset, sizeof(cmd_reset));
-	  // HAL_Delay(6000); // A longer delay after reset is recommended
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
-
-	  send_at_command(cmd_enter_config, sizeof(cmd_enter_config));
-	  // HAL_Delay(6000);
-	  while (message_received_flag == 0) {  }
-	  toggle_LED();
-	    message_received_flag = 0;
-	    indx = 0;
+	  send_command_and_wait(cmd_reset, sizeof(cmd_reset));
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
+	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
 
 
 }
@@ -248,20 +193,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 // Called automatically when a new frame lands in FIFO0
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	CAN_RxHeaderTypeDef rxHeader;
-	uint8_t data[8];
 
-	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, data) != HAL_OK) {
+	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, CAN_rx_data) != HAL_OK) {
 		Error_Handler(); // error handling
 	}
 
 	// Example: check ID, length, print/process
 	if (rxHeader.IDE == CAN_ID_STD) {
-		uint16_t id = rxHeader.StdId;     // 11-bit
-		uint8_t  dlc = rxHeader.DLC;      // 0..8
-		// TODO: handle 'data[0..dlc-1]'
-		send_at_command(data, dlc);
-			// CAN_received = 1;
+		CAN_rx_len = rxHeader.DLC;
+		CAN_received = 1;
 	}
+
 	else {
 		uint32_t id = rxHeader.ExtId;     // 29-bit
 		// TODO: handle extended ID
@@ -278,7 +220,6 @@ static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void send_at_command(const uint8_t* hex_cmd, uint16_t len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -293,13 +234,25 @@ void send_at_command(const uint8_t* hex_cmd, uint16_t len);
 int main(void)
 {
 
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
   /* Configure the system clock */
   SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -333,7 +286,7 @@ int main(void)
 	  		memcpy(FinalData, RxData, indx);
 
 	  		// Toggle the LED to signal received
-	  		toggle_LED();
+	  		//toggle_LED();
 
 	  		// clear the flag and reset index
 	  		message_received_flag = 0;
@@ -341,35 +294,31 @@ int main(void)
 	  	}
 
 
-    // 1. Transmit the UART message.
-	  	// address 0a01, channel 3, "selena"
-	   uint8_t lora_message[] = {0x0A, 0x01, 0x03, 0x73, 0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
-	   send_at_command(lora_message, sizeof(lora_message));
-	   HAL_Delay(100);
+	// 1. Transmit the UART message.
+	// address 0a01, channel 3, "selena"
+	uint8_t lora_message[] = {0x0A, 0x01, 0x03, 0x73, 0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
+	send_at_command(lora_message, sizeof(lora_message));
+	HAL_Delay(100);
 
-	   while (message_received_flag == 0) {  }
-	   toggle_LED();
-		message_received_flag = 0;
-		indx = 0;
-
-	/*
-	for (int i =0; i <5; i++){
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		HAL_Delay(100);
-	}
-	*/
-	  	/*
+	message_received_flag = 0;
+	indx = 0;
+	uint8_t testmessage[] = {0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
 	if (CAN_received) {
-
-
-		send_at_command(data, sizeof(lora_message));
-		  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		HAL_Delay(100); // Shortened delay for more frequent checks
+		send_at_command(CAN_rx_data, CAN_rx_len);
+		if (CAN_rx_data[0] == testmessage[0] &&
+		    CAN_rx_data[1] == testmessage[1] &&
+		    CAN_rx_data[2] == testmessage[2] &&
+		    CAN_rx_data[3] == testmessage[3] &&
+		    CAN_rx_data[4] == testmessage[4] &&
+		    CAN_rx_data[5] == testmessage[5]) {
+			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		}
+		CAN_rx_data[0] = 0;
+		//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		CAN_received = 0;
 	}
-	*/
-
-  /* USER CODE END 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -527,6 +476,14 @@ void send_at_command(const uint8_t* hex_cmd, uint16_t len) {
     // Buffer to hold the command plus the required "\r\n"
 	HAL_UART_Transmit(&huart2, (uint8_t*)hex_cmd, len, 100);
 }
+
+void send_command_and_wait(const uint8_t* cmd, uint16_t len) {
+	HAL_UART_Transmit(&huart2, (uint8_t*)cmd, len, 100);
+    while (message_received_flag == 0) {}
+    message_received_flag = 0;
+    indx = 0;
+}
+
 /* USER CODE END 4 */
 
 /**
