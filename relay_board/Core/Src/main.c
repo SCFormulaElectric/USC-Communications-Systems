@@ -136,6 +136,7 @@ int main(void)
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
   uint8_t blink_counter;
+  HAL_TIM_Base_Start_IT(&htim14);
   /* USER CODE END 2 */
 
   /* Infinite loop */
