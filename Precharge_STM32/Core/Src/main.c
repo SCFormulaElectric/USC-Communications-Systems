@@ -238,7 +238,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	 prevsdc = sdc;
+	 prev_sdc = sdc;
 	 sdc = HAL_GPIO_ReadPin(SDC_PIN);
 
 	 // To be worked out:
