@@ -241,67 +241,33 @@ int main(void)
 	 prev_sdc = sdc;
 	 sdc = HAL_GPIO_ReadPin(SDC_PIN);
 
-	 // To be worked out:
-	 /*
-	 if(!(gpio_reg & sdc) & !charged_flag){ // sdc inverted because we forgot
-													 // to step it down so we added
-													 // an inverter
-		 GPIO |= (1 << CHR_PIN);
 
-		 //uart_tx(1);
-		 if(!start_flag){ // if we're about to start a precharge attempt
-			 TMR1L = 0;  // reset the counters
-			 TMR1H = 0;
-		 }
-		 start_flag = 1;
-		 post_pin_new = gpio_reg & (1 << F_POST_PIN);
-		 pre_pin_new = gpio_reg & (1 << F_PRE_PIN);
-		 //uart_tx(post_pin_new);
-		 //uart_tx(pre_pin_new);
-		 if(pre_pin_new != pre_pin_old){ // if the value on pre_pin has changed
-			 pre_pin_count += 1;
-			 pre_pin_old = pre_pin_new;
-		 }
-		 if(post_pin_new != post_pin_old){ // if the value on post_pin has changed
-			 post_pin_count += 1;
-			 post_pin_old = post_pin_new;
-		 }
-	 }
-	 else if (gpio_reg & (1 << SDC_PIN)){   // SDC went low (inverted to high)
-		 pre_pin_count = 0;
-		 post_pin_count = 0;
-		 start_flag = 0;
-		 charged_flag = 0;
-		 start_count = 0;
-		 //TRISIO &= ~(1 << CHR_PIN);
-		 //WPU &= ~(1 << CHR_PIN);
-		 GPIO &= ~((1 << AIR_PIN)|(1 << CHR_PIN));
-	 }
-	 */
-
-	 // if SDC closes and we haven't already precharged
-	 if (sdc && !charged_flag) {
-
+	 // kind of resetting everything???
+	 if (!charged_flag && !start_flag) {
+		 // turn off outputs
+		 HAL_GPIO_WritePin(GPIOB, PRE_EN, 0);
+		 HAL_GPIO_WritePin(GPIOA, AIR_EN, 0);
+		 HAL_GPIO_WritePin(GPIOA, ERROR_PIN, 0);
 	 }
 
 	 // if SDC flipped from high to low, then system is good ->  PRE-CHARGE STATE
-	 if(!sdc && prev_sdc && !start_flag) {
+	 if(!sdc && prev_sdc && !start_flag && !charged_flag) {
 
 		 // start timer
 		 HAL_TIM_OC_Start_IT(&htim14, TIM_CHANNEL_1);
 
-		 start_flag = 1;
-		 charged_flag = 0;
+		 start_flag = 1;  // start charging
+		 charged_flag = 0;    // not fully charged
 
 		 // set pre-en to 1
-		 HAL_GPIO_WritePin(GPIOB, PRE_EN, 1);
+		 HAL_GPIO_WritePin(GPIOB, PRE_EN, 1);    // turn on relay to charge
 	 }
 
-	 // if it goes to charge state
+	 // if it goes to charged state (finished charging at 90%)
+	 // this transition happens in the interrupt callback
 	 if (!sdc && charged_flag && !start_flag) {
-		 HAL_GPIO_WritePin(GPIOA, AIR_EN, 1);
-		 HAL_GPIO_WritePin(GPIOB, PRE_EN, 0);
-
+		 HAL_GPIO_WritePin(GPIOA, AIR_EN, 1);     // indicates that it's precharged
+		 HAL_GPIO_WritePin(GPIOB, PRE_EN, 0);     // turn off relay since done precharging
 	 }
 
 	 // if it goes to error state
@@ -309,9 +275,16 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOA, AIR_EN, 0);
 		HAL_GPIO_WritePin(GPIOA, ERROR_PIN, 1);
 		HAL_GPIO_WritePin(GPIOB, PRE_EN, 0);
+		while();   // enter infinite loop
 	 }
 
-	 // if car gets turned off
+	 // if shutdown circuit gets turned off = go back to reset, turn everything off
+	 if (sdc) {
+		HAL_GPIO_WritePin(GPIOB, PRE_EN, 0);
+		HAL_GPIO_WritePin(GPIOB, AIR_EN, 0);
+		start_flag = 0;
+		charged_flag = 0;
+	 }
 
 
   }
