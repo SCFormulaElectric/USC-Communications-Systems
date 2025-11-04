@@ -124,7 +124,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     // pre frequency
     else if (htim->Instance == TIM17) {
     	// read and storing IC value
-	   captured = HAL_TIM_ReadCapturedValue(&htim16, TIM_CHANNEL_1);
+	   captured = HAL_TIM_ReadCapturedValue(&htim17, TIM_CHANNEL_1);
 	   pre_captures[pre_index++] = captured;
 
 	   if (pre_index >= 2) {
@@ -149,6 +149,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM14)
     {
         // executes each time CNT == CCR1
+
     	counter_preen++;
 
     	if (counter_preen == 1) {
