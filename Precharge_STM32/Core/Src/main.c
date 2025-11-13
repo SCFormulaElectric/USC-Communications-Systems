@@ -152,7 +152,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 
     	counter_preen++;
 
-    	if (counter_preen == 1) {
+    	if (counter_preen == lower_thresh_count) {
     		// make sure voltage ratio is not over 90%
     		ratio = post_frequency * 100 / pre_frequency;
 
@@ -391,7 +391,7 @@ static void MX_TIM16_Init(void)
 
   /* USER CODE END TIM16_Init 1 */
   htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 64;
+  htim16.Init.Prescaler = 128;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim16.Init.Period = 65535;
   htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
