@@ -262,8 +262,6 @@ int main(void)
 
   AT_Config();
 
-  CAN_Config();
-
   // --- START THE FIRST UART RECEPTION WITH INTERRUPT ---
   // This tells the UART hardware to start listening for the very first byte.
   // The interrupt callback will handle receiving all subsequent bytes.
@@ -298,25 +296,11 @@ int main(void)
 	// address 0a01, channel 3, "selena"
 	uint8_t lora_message[] = {0x0A, 0x01, 0x03, 0x73, 0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
 	send_at_command(lora_message, sizeof(lora_message));
-	HAL_Delay(100);
-
+	HAL_Delay(500);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	message_received_flag = 0;
 	indx = 0;
-	uint8_t testmessage[] = {0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
-	if (CAN_received) {
-		send_at_command(CAN_rx_data, CAN_rx_len);
-		if (CAN_rx_data[0] == testmessage[0] &&
-		    CAN_rx_data[1] == testmessage[1] &&
-		    CAN_rx_data[2] == testmessage[2] &&
-		    CAN_rx_data[3] == testmessage[3] &&
-		    CAN_rx_data[4] == testmessage[4] &&
-		    CAN_rx_data[5] == testmessage[5]) {
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		}
-		CAN_rx_data[0] = 0;
-		//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		CAN_received = 0;
-	}
+
   }
   /* USER CODE END 3 */
 }

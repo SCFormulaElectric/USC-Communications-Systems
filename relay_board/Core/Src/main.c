@@ -32,16 +32,13 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define RED_PIC_O_PIN		 GPIO_PIN_0
-#define GREEN_PIC_O_PIN      GPIO_PIN_1
-#define BMS_FAULT_O_PIN      GPIO_PIN_2
-#define BMS_FAULT_I_PIN	     GPIO_PIN_3
+#define RED_PIC_O_PIN	  	 GPIO_PIN_0
+#define GREEN_PIC_O_PIN    GPIO_PIN_1
+#define BMS_FAULT_O_PIN    GPIO_PIN_2
+#define BMS_FAULT_I_PIN    GPIO_PIN_3
 #define RESET_BUTTON_PIN	 GPIO_PIN_4
 #define RESET_LATCH_PIN	 	 GPIO_PIN_5
 #define IMD_GATE_I_PIN		 GPIO_PIN_6
-
-
-#define FREQ_SCALAR 10000
 
 /* USER CODE END PD */
 
@@ -72,7 +69,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM14) {
 
         uint8_t bms_gate_state = HAL_GPIO_ReadPin(GPIOA, BMS_FAULT_I_PIN);
-        uint8_t imd_gate_state = HAL_GPIO_ReadPin(GPIOA, IMD_GATE_I_PIN);
         uint8_t reset_button_state = HAL_GPIO_ReadPin(GPIOA, RESET_BUTTON_PIN);
         if(start == 0) {
         	start = 1;
@@ -89,11 +85,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         }
 
         if ((current_fault == 1) || faulted) {
-			fault_counter = 0;
-			HAL_GPIO_TogglePin(GPIOA, RED_PIC_O_PIN);
-			HAL_GPIO_WritePin(GPIOA, GREEN_PIC_O_PIN, GPIO_PIN_RESET);
-			faulted = 1;
-
+          fault_counter = 0;
+          HAL_GPIO_TogglePin(GPIOA, RED_PIC_O_PIN);
+          HAL_GPIO_WritePin(GPIOA, GREEN_PIC_O_PIN, GPIO_PIN_RESET);
+          faulted = 1;
         }
     }
 }
@@ -134,6 +129,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM14_Init();
+
   /* USER CODE BEGIN 2 */
   uint8_t blink_counter;
   /* USER CODE END 2 */
@@ -149,31 +145,37 @@ int main(void)
 	  uint8_t imd_gate_state = HAL_GPIO_ReadPin(GPIOA, IMD_GATE_I_PIN);
 	  uint8_t reset_button_state = HAL_GPIO_ReadPin(GPIOA, RESET_BUTTON_PIN);
 
-	  //copy pasted fault logic may not be applicable
 	  uint8_t potential_fault = (bms_gate_state == GPIO_PIN_SET) || (imd_gate_state == GPIO_PIN_RESET);
-	  uint8_t fault_counter
-	  if (potential_fault) {
-		  if (fault_counter < 20) {
-			  fault_counter++;
-		  } else if (fault_counter == 20) {
-			  current_fault = 1;
-		  } else {
-			  fault_counter = 0;
-		  }
-	  } else {
-		  if (fault_counter < 20) {
-			  fault_counter = 0;
-		  }
-		  if (fault_counter < 40) {
-			  fault_counter++;
-		  } else {
-			  current_fault = 0;
-			  fault_counter = 0;
-		  }
-	  }
+	  current_fault = potential_fault;
+
+	  //old fault logic
+    //uint8_t fault_counter;
+	  // if (potential_fault) {
+		//   if (fault_counter < 20) {
+		// 	  fault_counter++;
+		//   } else if (fault_counter == 20) {
+		// 	  current_fault = 1;
+		//   } else {
+		// 	  fault_counter = 0;
+		//   }
+	  // } else {
+		//   if (fault_counter < 20) {
+		// 	  fault_counter = 0;
+		//   }
+		//   if (fault_counter < 40) {
+		// 	  fault_counter++;
+		//   } else {
+		// 	  current_fault = 0;
+		// 	  fault_counter = 0;
+		//   }
+	  // }
+
 	if(reset_button_state) {
 		HAL_GPIO_WritePin(GPIOA, RESET_LATCH_PIN, GPIO_PIN_SET);
 	}
+  else {
+    HAL_GPIO_WritePin(GPIOA, RESET_LATCH_PIN, GPIO_PIN_RESET);
+  }
 	if(!faulted) {
 		blink_counter++;
 		HAL_GPIO_WritePin(GPIOA, GREEN_PIC_O_PIN, GPIO_PIN_RESET);
@@ -182,6 +184,7 @@ int main(void)
 		}
 		HAL_GPIO_WritePin(GPIOA, RED_PIC_O_PIN, GPIO_PIN_RESET);
 	}
+  }
   /* USER CODE END 3 */
 }
 
