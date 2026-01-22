@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,7 +50,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
+uint16_t adc_buf[4];
+uint16_t dma_flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,6 +106,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  dma_flag = 0;
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+  char message[8] = "testing";
 
   /* USER CODE END 2 */
 
@@ -111,11 +116,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);  // Green LED on PB5
-	  HAL_Delay(500);
+	  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);  // Green LED on PB5
+	  //HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
+		  HAL_Delay(4000);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(4000);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(4000);
+	  }
+	  if(dma_flag) {
+		  dma_flag = 0;
+		  HAL_Delay(250);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(250);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(250);
+
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -402,6 +423,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    if (hadc->Instance == ADC1)
+    {
+    	dma_flag = 1;
+        HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+    }
+}
 
 /* USER CODE END 4 */
 
