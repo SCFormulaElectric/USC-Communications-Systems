@@ -50,9 +50,9 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-  /* ADC BUF must be reread always, do not optimize values away*/
+  /* ADC BUF & dma_flag must be reread always, do not optimize values away*/
 static volatile uint16_t adc_buf[4];
-uint16_t dma_flag;
+static volatile uint16_t dma_flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,7 +64,7 @@ static void MX_CAN_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void set_muxOutput(int count);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -426,13 +426,30 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-// ADC configured in continuous mode so we enter this callback after the 4th channel is read.
+//  we enter this callback after the 4th channel is read.
 {
     if (hadc->Instance == ADC1) // here, we only have one adc, but its future-proofed
     {
     	dma_flag = 1;
         HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4); // why do we start DMA again? 
     }
+}
+
+void set_muxOutput(int count){
+  /* This function inputs an integer (mux counter) and outputs it in binary to the mux select pins (PA0-3)
+    test:
+    count = 5 -> PA0 = 1, PA1 = 0, PA2 = 1, PA3 = 0
+    which is 0101 which is 5
+    
+    Also double-checked against schematic to ensure bit-ordering is correct.
+
+  
+  */
+
+  HAL_GPIO_WritePin(GPIOA,PA0,(count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 /* USER CODE END 4 */
