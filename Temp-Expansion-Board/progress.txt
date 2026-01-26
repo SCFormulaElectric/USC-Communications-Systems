@@ -1,0 +1,19 @@
+1/26/26
+Pretty good progress so far
+Chris: Working DMA, testing UART
+Selena: Lots of heavy algorithms & can packet formatting completed
+
+Need to integrate selena's code into main
+There's lots, so it's best to go step by step.
+Also should gradually test functionality of board.
+
+Last week we failed to do UART. I don't think we grounded the two boards together.
+Then, we should ground the mux voltage sensors and see if the ADC is working.
+Then iterate through each to verify inttobinary is working.
+
+we could also verify can bus, but this is a big set up so maybe when there's less traffic.
+
+1 issue is Selena's code is polling based, and main uses DMA.
+So, probably best to add functions to main and then redo the glue logic (i can do this)
+When adding functions to main, please write a function prototype in the beginning then paste the function body near the end.
+    see setMux function as an example.
