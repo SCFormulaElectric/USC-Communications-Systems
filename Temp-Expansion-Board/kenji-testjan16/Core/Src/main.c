@@ -50,7 +50,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-uint16_t adc_buf[4];
+  /* ADC BUF must be reread always, do not optimize values away*/
+static volatile uint16_t adc_buf[4];
 uint16_t dma_flag;
 /* USER CODE END PV */
 
@@ -425,11 +426,12 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+// ADC configured in continuous mode so we enter this callback after the 4th channel is read.
 {
-    if (hadc->Instance == ADC1)
+    if (hadc->Instance == ADC1) // here, we only have one adc, but its future-proofed
     {
     	dma_flag = 1;
-        HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+        HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4); // why do we start DMA again? 
     }
 }
 
