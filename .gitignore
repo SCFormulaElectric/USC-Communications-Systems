@@ -92,6 +92,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Ignore everything inside the build folder...
+build/*
+
+# ...But do NOT ignore the .gitkeep file
+!build/.gitkeep
+
 ### Vim ###
 # Swap
 [._]*.s[a-v][a-z]
