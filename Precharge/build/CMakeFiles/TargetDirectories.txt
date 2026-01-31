@@ -1,0 +1,4 @@
+/Users/tim/Github/USC-Communications-Systems/Precharge/build/CMakeFiles/precharge_c011.elf.dir
+/Users/tim/Github/USC-Communications-Systems/Precharge/build/CMakeFiles/flash.dir
+/Users/tim/Github/USC-Communications-Systems/Precharge/build/CMakeFiles/edit_cache.dir
+/Users/tim/Github/USC-Communications-Systems/Precharge/build/CMakeFiles/rebuild_cache.dir
