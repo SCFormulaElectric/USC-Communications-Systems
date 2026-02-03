@@ -64,37 +64,47 @@ static void MX_CAN_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
-void adc_start_dma_4();
+<<<<<<< HEAD
 
 void set_muxOutput(int count);
 
-// lol is this declaration correct?
-uint8_t volt2temp(uint16_t adc_buf, int16_t temp_adc_lut[33][2]);
-
-void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT],
-                                 uint8_t module_number);
-
+=======
+void set_muxOutput(int count);
+>>>>>>> refs/remotes/origin/main
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define ADC_CH_COUNT 4
+#define THERM_COUNT 40
 
-// Voltage to temperature look-up table
-const int16_t temp_adc_lut[33][2] = {
-	{-40, 3028}, {-35, 3004}, {-30, 2979}, {-25, 2955},
-	{-20, 2916}, {-15, 2878}, {-10, 2817}, { -5, 2767},
-	{  0, 2694}, {  5, 2621}, { 10, 2548}, { 15, 2475},
-	{ 20, 2389}, { 25, 2316}, { 30, 2234}, { 35, 2161},
-	{ 40, 2088}, { 45, 2022}, { 50, 1973}, { 55, 1924},
-	{ 60, 1874}, { 65, 1837}, { 70, 1800}, { 75, 1775},
-	{ 80, 1737}, { 85, 1712}, { 90, 1699}, { 95, 1674},
-	{100, 1662}, {105, 1650}, {110, 1638}, {115, 1626},
-	{120, 1614}
-};
+uint16_t adc_buf[ADC_CH_COUNT];
 
-int8_t temp_array[THERM_COUNT];		// holds converted temperature values of 40 pins
-uint32_t adc_buf[4];	// holds adc values of 4 pins, gets loaded by DMA
+int count = 0;
+
+
+ int8_t temp_array[THERM_COUNT];
+
+
+ // TODO: double check, should be 12 bit ADCs, up to 3.6V?
+ // { temperature_C, adc_counts }
+ const int16_t temp_adc_lut[33][2] = {
+     {-40, 3028}, {-35, 3004}, {-30, 2979}, {-25, 2955},
+     {-20, 2916}, {-15, 2878}, {-10, 2817}, { -5, 2767},
+     {  0, 2694}, {  5, 2621}, { 10, 2548}, { 15, 2475},
+     { 20, 2389}, { 25, 2316}, { 30, 2234}, { 35, 2161},
+     { 40, 2088}, { 45, 2022}, { 50, 1973}, { 55, 1924},
+     { 60, 1874}, { 65, 1837}, { 70, 1800}, { 75, 1775},
+     { 80, 1737}, { 85, 1712}, { 90, 1699}, { 95, 1674},
+     {100, 1662}, {105, 1650}, {110, 1638}, {115, 1626},
+     {120, 1614}
+ };
+
+ // converts adc values to temperature based on datasheet + interpolation
+ uint8_t volt2temp(uint16_t adc_buf, int16_t temp_adc_lut[33][2]);
+
+ void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT],
+                                  uint8_t module_number);
 
 /* USER CODE END 0 */
 
@@ -134,18 +144,12 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   dma_flag = 0;
+<<<<<<< HEAD
+  // HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+=======
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+>>>>>>> refs/remotes/origin/main
   char message[8] = "testing";
-
-  if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
-  		  HAL_Delay(4000);
-  		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-  		  HAL_Delay(4000);
-  		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-  		  HAL_Delay(4000);
-  	  }
-
-  int count_muxpins = 0;
 
   /* USER CODE END 2 */
 
@@ -158,6 +162,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+<<<<<<< HEAD
+//	  if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
+//		  HAL_Delay(4000);
+//		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+//		  HAL_Delay(4000);
+//		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+//		  HAL_Delay(4000);
+//	  }
 //	  if(dma_flag) {
 //		  dma_flag = 0;
 //		  HAL_Delay(250);
@@ -171,22 +183,43 @@ int main(void)
 	  // set output pins going to muxes
 	  set_muxOutput(count_muxpins);
 
-	  // when adc_buf finished collecting voltage values
+	  // when adc_buf is filled
 	  if (dma_flag == 1) {
-		  // convert and load temperatures
+
+		  // load temperatures
 		  for (int m = 0; m < 4; m++) {
-			  temp_array[m*10 + count] = volt2temp(adc_buf[m], temp_adc_lut);
+			  temp_array[m*10 + count] = volt2temp(adc_buf[4];
 		  }
-		  count_muxpins++;
+
+		  count++;
 		  adc_start_dma_4();
 	  }
 
-	  // read through all 10 on each - can send signal now
+	  // set up outputs
 	  if (count_muxpins == 9) {
+		  // read through all 10 on each - can send signal now
 		  send_thermistor_CAN_msg(temp_array, module_number);
 		  count_muxpins = 0;
 	  }
 
+=======
+	  if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
+		  HAL_Delay(4000);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(4000);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(4000);
+	  }
+	  if(dma_flag) {
+		  dma_flag = 0;
+		  HAL_Delay(250);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(250);
+		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
+		  HAL_Delay(250);
+
+	  }
+>>>>>>> refs/remotes/origin/main
   }
   /* USER CODE END 3 */
 }
@@ -480,7 +513,32 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     if (hadc->Instance == ADC1) // here, we only have one adc, but its future-proofed
     {
     	dma_flag = 1;
+<<<<<<< HEAD
+        //HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4); // why do we start DMA again?
     }
+}
+
+
+=======
+        HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4); // why do we start DMA again? 
+    }
+}
+
+>>>>>>> refs/remotes/origin/main
+void set_muxOutput(int count){
+  /* This function inputs an integer (mux counter) and outputs it in binary to the mux select pins (PA0-3)
+    test:
+    count = 5 -> PA0 = 1, PA1 = 0, PA2 = 1, PA3 = 0
+    which is 0101 which is 5
+<<<<<<< HEAD
+
+    Also double-checked against schematic to ensure bit-ordering is correct.
+  */
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0,(count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 
@@ -492,28 +550,7 @@ static void adc_start_dma_4(void)
 }
 
 
-void set_muxOutput(int count){
-  /* This function inputs an integer (mux counter) and outputs it in binary to the mux select pins (PA0-3)
-    test:
-    count = 5 -> PA0 = 1, PA1 = 0, PA2 = 1, PA3 = 0
-    which is 0101 which is 5
-    
-    Also double-checked against schematic to ensure bit-ordering is correct.
-
-  */
-
-	HAL_GPIO_WritePin(GPIOA,PA0,(count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-}
-
-
 int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
-	/* This function takes in an adc_value and compares it against a look-up table
-	 * 		to get a corresponding temperature values.
-	 * Will linearly interpolate.
-	*/
 
 	  // TODO:   maybe also add in something for if the adc read is outside range of lookup table....
 
@@ -534,11 +571,10 @@ int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
  }
 
 
- void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT], uint8_t module_number)
+// prepare thermistor CAN message
+ void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT],
+                                 uint8_t module_number)
  {
-	 // This function prepares thermistor CAN message in format specified in datasheet
-	 // https://www.orionbms.com/downloads/misc/thermistor_module_canbus.pdf
-
 	 // CAN message is 8 bytes long
      int8_t data[8] = {0};
 
@@ -587,6 +623,23 @@ int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
      HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
  }
 
+
+
+
+=======
+    
+    Also double-checked against schematic to ensure bit-ordering is correct.
+
+  
+  */
+
+  HAL_GPIO_WritePin(GPIOA,PA0,(count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, PA3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+>>>>>>> refs/remotes/origin/main
 /* USER CODE END 4 */
 
 /**
