@@ -61,9 +61,29 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
     COMMENT "Generating binary file..."
 )
 
+#add_custom_target(flash
+#    COMMAND st-flash write ${PROJECT_NAME}.bin 0x08000000
+#    DEPENDS ${PROJECT_NAME}.elf
+#    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#    COMMENT "Flashing ${PROJECT_NAME}.bin to Nucleo board..."
+#)
+
+# --- Flashing Configuration ---
+
+# Path to STM32CubeProgrammer CLI (macOS default install path)
+set(STM32_PROG_PATH "/Applications/STMicroelectronics/STM32Cube/STM32CubeProgrammer/STM32CubeProgrammer.app/Contents/MacOs/bin/STM32_Programmer_CLI")
+
+# The Flash Target
 add_custom_target(flash
-    COMMAND st-flash write ${PROJECT_NAME}.bin 0x08000000
+    # Command: Connect (Under Reset) -> Write Binary -> Verify -> Reset Board
+    COMMAND ${STM32_PROG_PATH} -c port=SWD mode=UR -w ${PROJECT_NAME}.bin 0x08000000 -v -rst
+    
+    # Ensure the .elf is built before trying to flash
     DEPENDS ${PROJECT_NAME}.elf
+    
+    # Run this from the build folder
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Flashing ${PROJECT_NAME}.bin to Nucleo board..."
+    
+    # Print a nice message
+    COMMENT "Flashing ${PROJECT_NAME}.bin using STM32CubeProgrammer..."
 )

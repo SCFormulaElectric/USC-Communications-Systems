@@ -1,0 +1,5 @@
+1/31/26
+
+Started frequency conversions and timer configuration.
+
+Issues with overflow. Needs more reading.

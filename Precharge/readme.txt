@@ -39,3 +39,16 @@ We're working on reading a frequnecy on PA5 and inspecting the calculated freque
 Also,
     need to update CMAKelists to include the alias in make flash
     Need to create a gdb script
+
+
+
+TIPS: 
+starting openocd/gdb server: openocd -f interface/stlink.cfg -f target/stm32c0x.cfg
+starting gdb client (in build): arm-none-eabi-gdb precharge_c011.elf
+running gdb (common commands):
+    monitor reset halt
+    load
+    break main
+    continue
+    next
+    print /x *0x40022000
