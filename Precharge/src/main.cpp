@@ -8,6 +8,7 @@ volatile uint32_t msTicks = 0;
 volatile uint16_t last_capture = 0;
 volatile uint32_t frequency = 0;
 volatile uint32_t overflow_count = 0;
+volatile uint16_t diff = 0;
     //volatile uint32_t inspect_var = 0;
 
 //SysTick Interrupt Handler
@@ -30,7 +31,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
     static uint16_t firstTimeFlag = 0;
     if (TIM1->SR & TIM_SR_CC1IF) {
         uint16_t current_capture = TIM1->CCR1;
-        uint16_t diff = 0; // if diff is 0 then no freq calculation saving clockcs
+        diff = 0; // if diff is 0 then no freq calculation saving clockcs
         if (firstTimeFlag != 0){
             diff = current_capture - last_capture;
         }
@@ -92,6 +93,10 @@ void Timer_Input_Init(void) {
     //  use '5' here for AF5.
     GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL5_Pos);
     GPIOA->AFR[0] |= (5 << GPIO_AFRL_AFSEL5_Pos); 
+
+    //testing setting pull down to stop firstTimeflag from setting prematurely
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD5_Msk); 
+    GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD5_Pos);
 }
 
 void TIM1_Config(void) {
