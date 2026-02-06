@@ -3,3 +3,23 @@
 Started frequency conversions and timer configuration.
 
 Issues with overflow. Needs more reading.
+
+
+2/5/26
+Timer 1 is confirmed to be working. Tested from Fmin=8Hz to Fmax=10khz. We encountered an issue where we'd enter the timer interrupt handler despite not triggering a pin interrupt.
+This was probably because the pin was left floating. I enabled the pull down resistors and that solved the issue.
+
+We also count overflows and store the diff (period calculation) in a 32 bit int. So, overflow is handled. 
+
+Currently read the value of overflow at the beginning of the interrupt and then check to see if the overflow flag was set.
+Probably better to disable interrupts during the interrupt handler in the future.
+
+Current issue is when pin interrupts stop (which never happens on the car) the interrupt handler is never triggered.
+So, diff never gets updated. Frequency remains at whatever value it was during the last interrupt (not necessarily a valid value as i disconnected betwen periods).
+I read f=41.
+
+Another issue is we're off by 1Hz. Only noticed for freq < 100Hz, but could be a rounding issue as we're using ints. 
+
+TODO: Add 2nd timer driver. Port both drivers to their actual pins. (DCDC converter hasn't arrived yet.). Test ratios. Write state machine.
+Add CHG_EN functionality. Refactor to C++ style. Write documentation.
+See tests.txt for functionality.

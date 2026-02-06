@@ -1,0 +1,56 @@
+2/5/26
+
+Tested using Precharge_Fault (PA5) pin connected to waveform generator. Do not have dc dc converter so we have to test our code using exposed pins.
+Applied various frequencies, used gdb to print RESULTS: 
+
+Why uint8_t prints this:
+(gdb) print is_initialized 
+$1 = 0 '\000'
+
+
+RESULTS:PASSED 100HZ Test
+Program received signal SIGINT, Interrupt.
+main ()
+    at /Users/tim/Github/USC-Communications-Systems/Precharge/src/main.cpp:160
+160	        if (msTicks - past > 5000){
+1: diff = 5000
+2: frequency = 100
+(gdb) c
+Continuing.
+
+PASSED 67Hz Test: (1 off)
+Program received signal SIGINT, Interrupt.
+0x080006e0 in main ()
+    at /Users/tim/Github/USC-Communications-Systems/Precharge/src/main.cpp:160
+160	        if (msTicks - past > 5000){
+1: diff = 7462
+2: frequency = 66
+(gdb) c
+Continuing.
+^C
+
+WARNING: 8HZ: (1 off)
+Program received signal SIGINT, Interrupt.
+0x080006dc in main ()
+    at /Users/tim/Github/USC-Communications-Systems/Precharge/src/main.cpp:160
+160	        if (msTicks - past > 5000){
+1: diff = 62502
+2: frequency = 7
+(gdb) c
+Continuing.
+^C
+
+PASSED: 10KHz test
+Program received signal SIGINT, Interrupt.
+main ()
+    at /Users/tim/Github/USC-Communications-Systems/Precharge/src/main.cpp:160
+160	        if (msTicks - past > 5000){
+1: diff = 50
+2: frequency = 10000
+(gdb) c
+Continuing.
+^C
+
+BUGS: 
+If frequency is disconnected (e.g. 0V on HV), then diff is never cleared. So frequency = 500_000 / diff; never changes. Defaults to 41?
+Need to check this bug
