@@ -1,14 +1,19 @@
 #include "stm32c0xx.h"
 
 //prescalar confing & TIM1IRQ is handled by this;
+//TIMER FREQUENCY. SYSCLK IS AT CONSTANT 8MHz
 #define FREQUENCY 500000UL
 
 //Global Variables
 volatile uint32_t msTicks = 0;
-volatile uint16_t last_capture = 0;
 volatile uint32_t frequency = 0;
 volatile uint32_t overflow_count = 0;
+
+//Volatile variables that are only global for GDB/testing
+volatile uint32_t current_capture_32 = 0;
 volatile uint16_t diff = 0;
+volatile uint32_t last_capture_32 = 0;
+static uint8_t is_initialized = 0;
     //volatile uint32_t inspect_var = 0;
 
 //SysTick Interrupt Handler
@@ -28,27 +33,29 @@ extern "C" void TIM1_CC_IRQHandler(void) {
     This handler is entered 
     */
     // Everything else stays almost the same, just change TIM2 to TIM1
-    static uint16_t firstTimeFlag = 0;
-    if (TIM1->SR & TIM_SR_CC1IF) {
-        uint16_t current_capture = TIM1->CCR1;
-        diff = 0; // if diff is 0 then no freq calculation saving clockcs
-        if (firstTimeFlag != 0){
-            diff = current_capture - last_capture;
-        }
-        else{
-            firstTimeFlag = 1;
-        }
+    uint32_t ovf = overflow_count;
+    uint16_t cap = TIM1->CCR1;
 
-        if (diff > 0) {
-            frequency = FREQUENCY / diff; // ok if this is 100 clock cycles, then this ISR is 12.5uS long
-        }
-
-        last_capture = current_capture;
-        
-        //TIM1->SR = ~TIM_SR_CC1IF; //clears loop condition flag, resetting IRQ
-        // Apparently overflow flag might also be cleared so we have to solely reset the CC1IF 
-        TIM1->SR &= ~TIM_SR_CC1IF;
+    if ((TIM1->SR & TIM_SR_UIF) && cap < 0x8000) {
+        ovf++;
     }
+    current_capture_32 = (ovf << 16) | cap;
+
+    if (is_initialized) {
+            //period between rising edges ((T+Tn) - T) = Tn
+            diff = current_capture_32 - last_capture_32;
+
+            if (diff > 0) {
+                // you can 
+                frequency = FREQUENCY / diff; 
+            }
+    }
+    else {
+            // This handles case where only 1 rising edge has occured and diff calc is undf
+            is_initialized = 1; 
+        }
+    last_capture_32 = current_capture_32;
+    TIM1->SR &= ~TIM_SR_CC1IF;
 }
 
 //Delay Function
@@ -134,6 +141,10 @@ void TIM1_Config(void) {
     //enable  TIM1 Capture Compare interrupts
     NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)
+
+    //testing setting pull down to stop firstTimeflag from setting prematurely
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD5_Msk); 
+    GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD5_Pos);
 }
 
 // --- Main ---
