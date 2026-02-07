@@ -1,7 +1,10 @@
-2/6/2026
+2/7/2026
 
 Code was tested. WIP.
 
-Need to think about IMD start-up faults. Previously they incremented a counter, but IMD no faults should 
-be thoroughly verified before doing this...
+Initial commit:
+Reset only if all faults are cleared, check for all faults immediately.
 
+Now, reset only if no BMS fault. Check for IMD fault after 2 seconds
+On reset, clear latch, set state to SAFE, and wait another 2 seconds before counting IMD faults
+During these 2 seconds, the stm32 still looks for BMS errors.
