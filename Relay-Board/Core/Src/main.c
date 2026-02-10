@@ -74,6 +74,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	uint8_t startupDone = 0;
+	uint32_t startupTime = HAL_GetTick();
 
   /* USER CODE END 1 */
 
@@ -97,7 +99,7 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 
   //This is not good to have delay in init code (EV Active has time limits)
-  HAL_Delay(50);
+  HAL_Delay(5);
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
 
   //This is BMS relay, only set when safe
@@ -117,6 +119,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+  startupTime = HAL_GetTick();
+  //this is the first instruction before we enter while loop so as close to startup time as psosible.
 
   /* USER CODE END 2 */
 
@@ -132,7 +136,10 @@ int main(void)
 	  //when BMS Fault goes low, overriding the pull up resistor there's a fault
 	  uint8_t fault_bms = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2) == GPIO_PIN_RESET);
 
-	  uint8_t fault_imd = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET);
+	  if (HAL_GetTick() - startupTime > 2000){
+		  startupDone = 1;
+	  }
+	  uint8_t fault_imd = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET && startupDone);
 
 	  uint8_t physical_fault_present = (fault_bms || fault_imd);
 
@@ -145,26 +152,27 @@ int main(void)
 			  current_state = UNSAFE;
 		  }
 
-		  if (reset){
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-			  HAL_Delay(50);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-		  }
 
 	  }
 
 	  else if (current_state == UNSAFE){
+		  // We cannot leave UNSAFE except for a reset.
 
-		  //if we're in UNSAFE and a RESET occurs and at the same time No faults, then we can Reset latches and enter SAFE.
-		  //otherwise, we're unsafe
-		  if (!physical_fault_present && reset){
+	  }
 
-			  current_state = SAFE;
+	  //Async reset
+	  if (reset && !fault_bms){
+		  // Reset latches on relays
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+		  HAL_Delay(5);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
 
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-			  HAL_Delay(50);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
-		  }
+		  //update startTime, reset startupDone allowing IMD to fault for up to 2s after reset
+		  startupTime = HAL_GetTick();
+		  startupDone = 0;
+
+		  //Change state to SAFE:
+		  current_state = SAFE;
 
 	  }
 
