@@ -532,10 +532,10 @@ void set_muxOutput(int count){
 
   */
 
-	HAL_GPIO_WritePin(GPIOA,PA0,(count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOA, PA3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, (count & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, (count & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, (count & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, (count & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 
