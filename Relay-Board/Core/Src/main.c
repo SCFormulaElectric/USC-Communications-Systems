@@ -136,6 +136,9 @@ int main(void)
 	  //when BMS Fault goes low, overriding the pull up resistor there's a fault
 	  uint8_t fault_bms = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2) == GPIO_PIN_RESET);
 
+    //Online it says Bender ISO175 has response time <30s. IF this is the case,
+    //it may be better to just set startupDone after the first time or couple of itmes
+    //imd_fault goes to 0, indicating no faults present and setup has finsihed.
 	  if (HAL_GetTick() - startupTime > 2000){
 		  startupDone = 1;
 	  }
