@@ -142,15 +142,15 @@ void Timer_Input_Init(void) {
     // enable GPIOA and TIM1 and TIM17 Clocks
     RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
     RCC->APBENR2 |= RCC_APBENR2_TIM1EN; // TIM1 is on APB2
-    // RCC->APBENR2 |= RCC_APBENR2_TIM17EN; // TIM17
+    //RCC->APBENR2 |= RCC_APBENR2_TIM17EN; // TIM17
 
-    // set PA6 to Alternate Function Mode 10 [POST AIR]
-    GPIOA->MODER &= ~GPIO_MODER_MODE6; //PA6 
-    GPIOA->MODER |= GPIO_MODER_MODE6_1; ///*!< 0x00002000 */ from c011xx.h
+    // we set PA0 [instead ofpa6] to timer1 (af mode)
+    GPIOA->MODER &= ~GPIO_MODER_MODE0; //PA6 
+    GPIOA->MODER |= GPIO_MODER_MODE0_1; ///*!< /*!< 0x00000002 */ */ from c011xx.h
 
-    // set PA6 Alternate Function to AF2 TIM1_CH1
-    GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL6_Pos);
-    GPIOA->AFR[0] |= (5 << GPIO_AFRL_AFSEL6_Pos); 
+    // changed PA0 to  Alternate 
+    GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL0_Pos);
+    GPIOA->AFR[0] |= (5 << GPIO_AFRL_AFSEL0_Pos); 
 
     // // set PA7 to Alternate Function Mode 10 [PRE AIR]
     // GPIOA->MODER &= ~GPIO_MODER_MODE7; //PA7 
@@ -160,14 +160,17 @@ void Timer_Input_Init(void) {
     // GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL7_Pos);
     // GPIOA->AFR[0] |= (2 << GPIO_AFRL_AFSEL7_Pos); 
 
-    //testing setting pull down to stop firstTimeflag from setting prematurely
-    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD6_Msk); 
-    GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD6_Pos);
+    //Before we tested with pull down, now external 3.3V pull up so remove.
+    //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
+    //GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD0_Pos);
     // GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
     // GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
 }
 
 void TIM1_Config(void) {
+    //FOR GDB / DEBUGGING stop timers during debugging to allow for step-throuh
+    DBG->APBFZ2 |= DBG_APB_FZ2_DBG_TIM1_STOP;
+
     // set TIM1EN register, turns on tim1 clock
     RCC->APBENR2 |= RCC_APBENR2_TIM1EN;
 
@@ -182,6 +185,12 @@ void TIM1_Config(void) {
 
     //set channel 1 to input
     TIM1->CCMR1 |= TIM_CCMR1_CC1S_0;
+    
+    //digital input filter
+
+    TIM1->CCMR1 &= ~TIM_CCMR1_IC1F;
+
+    TIM1->CCMR1 |= (7U << TIM_CCMR1_IC1F_Pos); // set 0111 for 4uS filter at 8MHz clock
     
 
     //Filter not needed
