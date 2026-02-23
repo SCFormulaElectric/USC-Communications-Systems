@@ -13,19 +13,18 @@ volatile uint32_t overflow_count_post = 0;
 volatile uint32_t current_capture_32_post = 0;
 volatile uint16_t diff_post = 0;
 volatile uint32_t last_capture_32_post = 0;
-static uint8_t is_initialized_post = 0;
-    //volatile uint32_t inspect_var = 0;
+static volatile uint8_t is_initialized_post = 0;
 
 // // PRE-AIR - Global variables
-// volatile uint32_t msTicks_pre = 0;
-// volatile uint32_t frequency_pre = 0;
-// volatile uint32_t overflow_count_pre = 0;
+volatile uint32_t msTicks_pre = 0;
+volatile uint32_t frequency_pre = 0;
+volatile uint32_t overflow_count_pre = 0;
 
 // // PRE-AIR - Volatile variables that are only global for GDB/testing
-// volatile uint32_t current_capture_32_pre = 0;
-// volatile uint16_t diff_pre = 0;
-// volatile uint32_t last_capture_32_pre = 0;
-// static uint8_t is_initialized_pre = 0;
+volatile uint32_t current_capture_32_pre = 0;
+volatile uint16_t diff_pre = 0;
+volatile uint32_t last_capture_32_pre = 0;
+static volatile uint8_t is_initialized_pre = 0;
 
 
 //SysTick Interrupt Handler
@@ -36,7 +35,8 @@ extern "C" void SysTick_Handler(void) {
 extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
     if (TIM1->SR & TIM_SR_UIF) {
         overflow_count_post++;
-        TIM1->SR &= ~TIM_SR_UIF; // Clear flag
+        //TIM1->SR &= ~TIM_SR_UIF; // Clear flag
+        TIM1->SR = ~TIM_SR_UIF;
     }
 }
 
@@ -60,7 +60,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
 
             if (diff_post > 0) {
                 // you can 
-                frequency_post = FREQUENCY / diff_post; 
+                //frequency_post = FREQUENCY / diff_post; 
             }
     }
     else {
@@ -68,46 +68,49 @@ extern "C" void TIM1_CC_IRQHandler(void) {
             is_initialized_post = 1; 
         }
     last_capture_32_post = current_capture_32_post;
-    TIM1->SR &= ~TIM_SR_CC1IF;
+    TIM1->SR = ~TIM_SR_CC1IF;
 }
 
 
-// extern "C" void TIM17_IRQHandler(void) {
-//     /*
-//     This handler is entered 
-//     */
-//     if (TIM17->SR & TIM_SR_CC1IF) {
-//         uint32_t ovf = overflow_count_pre;
-//         uint16_t cap = TIM17->CCR1;
+ extern "C" void TIM17_IRQHandler(void) {
+     /*
+     This handler is entered 
+     */
+     if (TIM17->SR & TIM_SR_CC1IF) {
+         uint32_t ovf = overflow_count_pre;
+         uint16_t cap = TIM17->CCR1;
 
-//         if ((TIM17->SR & TIM_SR_UIF) && cap < 0x8000) {
-//             ovf++;
-//         }
-//         current_capture_32_pre = (ovf << 16) | cap;
+         if ((TIM17->SR & TIM_SR_UIF) && cap < 0x8000) {
+             ovf++;
+         }
+         current_capture_32_pre = (ovf << 16) | cap;
 
-//         if (is_initialized_pre) {
-//                 //period between rising edges ((T+Tn) - T) = Tn
-//                 diff_post = current_capture_32_pre - last_capture_32_pre;
+         if (is_initialized_pre) {
+                 //period between rising edges ((T+Tn) - T) = Tn
+                 diff_pre = current_capture_32_pre - last_capture_32_pre;
 
-//                 if (diff_pre > 0) {
-//                     // you can 
-//                     frequency_pre = FREQUENCY / diff_pre; 
-//                 }
-//         }
-//         else {
-//                 // This handles case where only 1 rising edge has occured and diff calc is undf
-//                 is_initialized_pre = 1; 
-//             }
-//         last_capture_32_pre = current_capture_32_pre;
-//         TIM17->SR &= ~TIM_SR_CC1IF;
-//     }
+                 if (diff_pre > 0) {
+                     // you can 
+                     //frequency_pre = FREQUENCY / diff_pre; 
+                 }
+         }
+         else {
+                 // This handles case where only 1 rising edge has occured and diff calc is undf
+                 is_initialized_pre = 1; 
+             }
+         last_capture_32_pre = current_capture_32_pre;
+         
+         TIM17->SR = ~TIM_SR_CC1IF;
+         
+     }
 
-//     if (TIM17->SR & TIM_SR_UIF) {
-//         overflow_count_pre++;
-//         TIM17->SR &= ~TIM_SR_UIF; // Clear flag
-//     }
+     if (TIM17->SR & TIM_SR_UIF) {
+         overflow_count_pre++;
+         
+         TIM17->SR = ~TIM_SR_UIF;
+     }
 
-// }
+ }
 
 
 //Delay Function
@@ -142,7 +145,7 @@ void Timer_Input_Init(void) {
     // enable GPIOA and TIM1 and TIM17 Clocks
     RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
     RCC->APBENR2 |= RCC_APBENR2_TIM1EN; // TIM1 is on APB2
-    //RCC->APBENR2 |= RCC_APBENR2_TIM17EN; // TIM17
+    RCC->APBENR2 |= RCC_APBENR2_TIM17EN; // TIM17
 
     // we set PA0 [instead ofpa6] to timer1 (af mode)
     GPIOA->MODER &= ~GPIO_MODER_MODE0; //PA6 
@@ -153,23 +156,26 @@ void Timer_Input_Init(void) {
     GPIOA->AFR[0] |= (5 << GPIO_AFRL_AFSEL0_Pos); 
 
     // // set PA7 to Alternate Function Mode 10 [PRE AIR]
-    // GPIOA->MODER &= ~GPIO_MODER_MODE7; //PA7 
-    // GPIOA->MODER |= GPIO_MODER_MODE7_1; ///*!< 0x00002000 */ from c011xx.h
+    GPIOA->MODER &= ~GPIO_MODER_MODE7; //PA7 
+    GPIOA->MODER |= GPIO_MODER_MODE7_1; ///*!< 0x00002000 */ from c011xx.h
 
-    // // set PA7 Alternate Function to AF2 TIM17_CH1
-    // GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL7_Pos);
-    // GPIOA->AFR[0] |= (2 << GPIO_AFRL_AFSEL7_Pos); 
+    // // set PA7 Alternate Function to AF5 TIM17_CH1
+    GPIOA->AFR[0] &= ~(0xF << GPIO_AFRL_AFSEL7_Pos);
+    GPIOA->AFR[0] |= (5U << GPIO_AFRL_AFSEL7_Pos);
 
     //Before we tested with pull down, now external 3.3V pull up so remove.
     //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
     //GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD0_Pos);
     // GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
     // GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
+    GPIOA->PUPDR |= (1U << GPIO_PUPDR_PUPD0_Pos);
 }
 
 void TIM1_Config(void) {
     //FOR GDB / DEBUGGING stop timers during debugging to allow for step-throuh
     DBG->APBFZ2 |= DBG_APB_FZ2_DBG_TIM1_STOP;
+    DBG->APBFZ2 |= DBG_APB_FZ2_DBG_TIM17_STOP;
 
     // set TIM1EN register, turns on tim1 clock
     RCC->APBENR2 |= RCC_APBENR2_TIM1EN;
@@ -186,18 +192,19 @@ void TIM1_Config(void) {
     //set channel 1 to input
     TIM1->CCMR1 |= TIM_CCMR1_CC1S_0;
     
-    //digital input filter
+    //digital input filter we treid with no effect
 
-    TIM1->CCMR1 &= ~TIM_CCMR1_IC1F;
-
-    TIM1->CCMR1 |= (7U << TIM_CCMR1_IC1F_Pos); // set 0111 for 4uS filter at 8MHz clock
+    //TIM1->CCMR1 &= ~TIM_CCMR1_IC1F;
+    //TIM1->CCMR1 |= (9U << TIM_CCMR1_IC1F_Pos);
+    //TIM1->CCMR1 |= (7U << TIM_CCMR1_IC1F_Pos); // set 0111 for 4uS filter at 8MHz clock
     
 
     //Filter not needed
     //TIM1->CCMR1 &= ~TIM_CCMR1_IC1F; 
     
-    // rising edge capture mode CC1P=0, CC1NP=0
-    TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+    // rising edge capture mode CC1P=0, CC1NP=0 switched to falling mode
+    //TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+    TIM1->CCER |= TIM_CCER_CC1P;
     
     // channel 1 capture enabled; on every rising edge, TIM1 CCR1 = TIM1 CNT
     TIM1->CCER |= TIM_CCER_CC1E;
@@ -213,63 +220,89 @@ void TIM1_Config(void) {
     NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)
 }
 
-// void TIM17_Config(void) {
+void TIM17_Config(void) {
 //     // set TIM17EN register, turns on tim17 clock
-//     RCC->APBENR2 |= RCC_APBENR2_TIM17EN;
+       RCC->APBENR2 |= RCC_APBENR2_TIM17EN;
 
 //     // we calculated min sampling frequency of 8Hz with prescalar 16 (15 + 1). 
-//     TIM17->PSC = (8000000/FREQUENCY) - 1;           
+       TIM17->PSC = (8000000/FREQUENCY) - 1;           
 
 //     //autoreload register max value (16bit = 0xffff), triggers interrupt and goes to 0 after arr ==0xff
-//     TIM17->ARR = 0xFFFF;
+       TIM17->ARR = 0xFFFF;
 
 //     //clear capture-compare mode register 1 
-//     TIM17->CCMR1 &= ~TIM_CCMR1_CC1S;
+       TIM17->CCMR1 &= ~TIM_CCMR1_CC1S;
 
 //     //set channel 1 to input
-//     TIM17->CCMR1 |= TIM_CCMR1_CC1S_0;
+       TIM17->CCMR1 |= TIM_CCMR1_CC1S_0;
     
 
 //     //Filter not needed
-//     //TIM17->CCMR1 &= ~TIM_CCMR1_IC1F; 
+       //TIM17->CCMR1 &= ~TIM_CCMR1_IC1F; 
     
-//     // rising edge capture mode CC1P=0, CC1NP=0
-//     TIM17->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+       // rising edge capture mode CC1P=0, CC1NP=0 switched to falling edge
+       //TIM17->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+       TIM17->CCER |= TIM_CCER_CC1P;
     
 //     // channel 1 capture enabled; on every rising edge, TIM17 CCR1 = TIM17 CNT
-//     TIM17->CCER |= TIM_CCER_CC1E;
+       TIM17->CCER |= TIM_CCER_CC1E;
 
-//     // Enable Capture/Compare Interrupt 
-//     TIM17->DIER |= (TIM_DIER_UIE | TIM_DIER_CC2IE);   // use interrupt 2
+     // Enable Capture/Compare Interrupt 
+       TIM17->DIER |= (TIM_DIER_UIE | TIM_DIER_CC1IE);
+       //TIM17->DIER |= (TIM_DIER_UIE | TIM_DIER_CC2IE);   // why interrupt 2? Im trying with one first
 
 //     //start timer
-//     TIM17->CR1 |= TIM_CR1_CEN;
+       TIM17->CR1 |= TIM_CR1_CEN;
 
 //     //enable  TIM17 Capture Compare interrupts
-//     NVIC_EnableIRQ(TIM17_IRQn);
-//     // NVIC_EnableIRQ(TIM17_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)    
-// }
+       NVIC_EnableIRQ(TIM17_IRQn);
+       // NVIC_EnableIRQ(TIM17_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)    
+ }
 
 // --- Main ---
 int main() {
     SystemClock_Config_HSE(); // Set to 8MHz External Crystal
     Timer_Input_Init();       // Configure PA6 as AF2 (TIM1_CH1), PA7 as TIM17
     TIM1_Config();
-    // TIM17_Config();
+    TIM17_Config();
     SysTick_Config(SystemCoreClock / 1000);
-    uint32_t counter_post = 0;
-    uint32_t past_post = 0;
-    // uint32_t counter_pre = 0;
-    // uint32_t past_pre = 0;
 
+    
+    uint32_t localDiff_pre = 0;
+    uint32_t localDiff_post = 0;
+    uint32_t intermediateResult = 0;
+
+    uint32_t ratioWhole = 0;
+    uint32_t ratioFrac =0;
+
+    uint32_t localFreq_pre = 0;
+    uint32_t localFreq_post = 0;
     while (1) {
-        if (msTicks_post - past_post > 5000){
-            counter_post++;
-            past_post = msTicks_post;
+        //gather inputs
+        __disable_irq();
+        localDiff_pre = diff_pre;
+        localDiff_post = diff_post;
+        __enable_irq();
+        if (localDiff_pre > 0){
+            localFreq_pre = FREQUENCY / localDiff_pre;
         }
-        // if (msTicks_pre - past_pre > 5000){
-        //     counter_pre++;
-        //     past_pre = msTicks_pre;
-        // }
+        else{
+            localFreq_pre = 0;
+        }
+
+        if (localDiff_post > 0){
+            localFreq_post = FREQUENCY / localDiff_post;
+        }
+        else{
+            localFreq_post = 0;
+
+        }
+
+        //ratioWhole = intermediateResult / 1000;
+        //ratioFrac  = intermediateResult % 1000;
+        
+
+        //logic
+
     }
 }
