@@ -66,16 +66,18 @@ static void MX_CAN_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
+#define THERM_COUNT 40
+#define module_number 0x00
+#define ADC_CH_COUNT 4
 
 void adc_start_dma_4();
 
 void set_muxOutput(int count);
 
 // lol is this declaration correct?
-uint8_t volt2temp(uint16_t adc_buf, int16_t temp_adc_lut[33][2]);
+int8_t volt2temp(uint16_t adc_buf, int16_t temp_adc_lut[33][2]);
 
-void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT],
-                                 uint8_t module_number);
+void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT]);
 
 /* USER CODE END PFP */
 
@@ -96,7 +98,6 @@ const int16_t temp_adc_lut[33][2] = {
 };
 
 int8_t temp_array[THERM_COUNT];		// holds converted temperature values of 40 pins
-uint32_t adc_buf[4];	// holds adc values of 4 pins, gets loaded by DMA
 
 /* USER CODE END 0 */
 
@@ -136,7 +137,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   dma_flag = 0;
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+  HAL_ADC_Start_DMA(&hadc1, (uint16_t*)adc_buf, 4);
   char message[8] = "testing";
 
   if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
@@ -175,15 +176,20 @@ int main(void)
 
 	  // when adc_buf finished collecting voltage values
 	  if (dma_flag == 1) {
+	  HAL_Delay(100);
 
-      // Debug UART transmit: adc_buf data at each count_muxpins step (0—9). 
-      char buffer[100]; 
-      sprintf(buffer, "Mux channel %d: %d %d %d %d\r\n", count_muxpins, adc_buf[0], adc_buf[1], adc_buf[2], adc_buf[3]); 
-      HAL_UART_Transmit(&huart1, (uint8_t*) buffer, (uint16_t) strlen(buffer), 100); 
 
 		  // convert and load temperatures
 		  for (int m = 0; m < 4; m++) {
+			  // Debug UART transmit: adc_buf data at each count_muxpins step (0—9).
+			   char buffer[30];
+			   sprintf(buffer, "Mux %d, channel %d: %d \r\n", m, count_muxpins, adc_buf[m]);
+			   HAL_UART_Transmit(&huart1, (uint8_t*) buffer, (uint16_t) strlen(buffer), 100);
+
 			  temp_array[m*10 + count_muxpins] = volt2temp(adc_buf[m], temp_adc_lut);
+			  char buffer2[20];
+			  sprintf(buffer2, "Temp: %d C\r\n", temp_array[m*10 + count_muxpins]);
+			  HAL_UART_Transmit(&huart1, (uint8_t*) buffer2, (uint16_t) strlen(buffer2), 100);
 		  }
 		  count_muxpins++;
 		  adc_start_dma_4();
@@ -192,28 +198,28 @@ int main(void)
 	  // read through all 10 on each - can send signal now
 	  if (count_muxpins == 9) {
 
-      // Debug UART transmit: confirming CAN message sent after all 40 ADC readings collected. 
-      char can_msg[] = "Sending CAN message\r\n"; 
-      HAL_UART_Transmit(&huart1, (uint8_t*) can_msg, (uint16_t) strlen(can_msg), 100); 
+		  // Debug UART transmit: confirming CAN message sent after all 40 ADC readings collected.
+		  char can_msg[] = "Sending CAN message\r\n";
+		  //HAL_UART_Transmit(&huart1, (uint8_t*) can_msg, (uint16_t) strlen(can_msg), 100);
 
-      // Debug UART transmit: printing all temp_array temperature data. 
-      char title[] = "Temp array temperature data for all channels:\r\n"; 
-      HAL_UART_Transmit(&huart1, (uint8_t*) title, (uint16_t) strlen(title), 100); 
-      for (int mux = 0; mux < 4; mux++)
-      {
-        char msg[100]; 
-        sprintf(msg, 
-        "Mux %d: %d %d %d %d %d %d %d %d %d %d\r\n", 
-        mux + 1,
-        temp_array[mux*10 + 0], temp_array[mux*10 + 1], temp_array[mux*10 + 2],
-        temp_array[mux*10 + 3], temp_array[mux*10 + 4], temp_array[mux*10 + 5],
-        temp_array[mux*10 + 6], temp_array[mux*10 + 7], temp_array[mux*10 + 8],
-        temp_array[mux*10 + 9]); 
-        HAL_UART_Transmit(&huart1, (uint8_t*) msg, (uint16_t) strlen(msg), 100); 
-      }
+		  // Debug UART transmit: printing all temp_array temperature data.
+		  char title[] = "Temp array temperature data for all channels:\r\n";
+		 // HAL_UART_Transmit(&huart1, (uint8_t*) title, (uint16_t) strlen(title), 100);
+		  for (int mux = 0; mux < 4; mux++)
+		  {
+			char msg[100];
+			sprintf(msg,
+			"Mux %d: %d %d %d %d %d %d %d %d %d %d\r\n",
+			mux + 1,
+			temp_array[mux*10 + 0], temp_array[mux*10 + 1], temp_array[mux*10 + 2],
+			temp_array[mux*10 + 3], temp_array[mux*10 + 4], temp_array[mux*10 + 5],
+			temp_array[mux*10 + 6], temp_array[mux*10 + 7], temp_array[mux*10 + 8],
+			temp_array[mux*10 + 9]);
+		   // HAL_UART_Transmit(&huart1, (uint8_t*) msg, (uint16_t) strlen(msg), 100);
+		  }
 
 
-		  send_thermistor_CAN_msg(temp_array, module_number);
+		  send_thermistor_CAN_msg(temp_array);
 		  count_muxpins = 0;
 	  }
 
@@ -514,11 +520,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 }
 
 
-static void adc_start_dma_4(void)
+void adc_start_dma_4(void)
 {
     dma_flag = 0;
     // Starts regular sequence conversions; DMA stores ADC_CH_COUNT samples
-    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_CH_COUNT);
+    HAL_ADC_Start_DMA(&hadc1, (uint16_t*)adc_buf, ADC_CH_COUNT);
 }
 
 
@@ -527,7 +533,7 @@ void set_muxOutput(int count){
     test:
     count = 5 -> PA0 = 1, PA1 = 0, PA2 = 1, PA3 = 0
     which is 0101 which is 5
-    
+
     Also double-checked against schematic to ensure bit-ordering is correct.
 
   */
@@ -540,42 +546,45 @@ void set_muxOutput(int count){
 
 
 int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
-	/* This function takes in an adc_value and compares it against a look-up table
-	 * 		to get a corresponding temperature value.
-	 * Will linearly interpolate.
-	*/
+    /* This function takes in an adc_value and compares it against a look-up table
 
-	  // TODO:   maybe also add in something for if the adc read is outside range of lookup table....
+to get a corresponding temperature value.
+Will linearly interpolate.
+*/
 
-	 int8_t temp = 0;
-   int16_t temp16; 
+      // TODO:   maybe also add in something for if the adc read is outside range of lookup table....
 
-  if (adc_val >= temp_adc_lut[0][1]) 
+    int8_t temp = 0;
+    int16_t temp16 = 0;
+
+  if (adc_val >= temp_adc_lut[0][1])
   {
-    return -127;  // Too cold, return minimum int8_t value. 
+    return -128;  // Too cold, return minimum int8_t value.
   }
 
-  if (adc_val <= temp_adc_lut[32][1]) 
+  else if (adc_val <= temp_adc_lut[32][1])
   {
-    return 128;  // Too hot, return maximum int8_t value. 
+    return 127;  // Too hot, return maximum int8_t value.
+  }
+  else {
+      for (int t = 1; t < 33; t++) {
+        if (adc_val > temp_adc_lut[t][1]) {
+            // linear interpolation between row t-1 and row t
+            temp16 = temp_adc_lut[t-1][0] +
+                     (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) * (temp_adc_lut[t-1][1]-adc_val) /
+                     (temp_adc_lut[t-1][1] - temp_adc_lut[t][1]);
+            break;
+        }
+      }
+     // convert to 8 bit, as sent in CAN protocol
+     temp = (int8_t)temp16;
+     return temp;
   }
 
-  for (int t = 1; t < 33; t++) { 
-    if (adc_val < temp_adc_lut[t][1]) {
-        // linear interpolation between row t-1 and row t
-        temp16 = temp_adc_lut[t-1][0] +
-                 (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) * (adc_val - temp_adc_lut[t-1][1]) /
-                 (temp_adc_lut[t][1] - temp_adc_lut[t-1][1]);
-        break;
-    }
-}
-	 // convert to 8 bit, as sent in CAN protocol
-	 temp = int8_t(temp16);
-	 return temp;
  }
 
 
- void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT], uint8_t module_number)
+ void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT])
  {
 	 // This function prepares thermistor CAN message in format specified in datasheet
 	 // https://www.orionbms.com/downloads/misc/thermistor_module_canbus.pdf
@@ -605,6 +614,11 @@ int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
      }
      int8_t avg_temp = (int8_t)(sum / THERM_COUNT);
 
+     char buff3[30];
+     sprintf(buff3, "Min: %d F, Max: %d F, Avg: %d F\r\n", min_temp, max_temp, avg_temp);
+     HAL_UART_Transmit(&huart1, (uint8_t*) buff3, (uint16_t) strlen(buff3), 100);
+
+
      // --------- Fill payload ----------
      data[0] = module_number;       	// Byte 1
      data[1] = (int8_t)min_temp;   	// Byte 2
@@ -613,7 +627,7 @@ int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
      data[4] = (uint8_t)THERM_COUNT;	// Byte 5
      data[5] = max_id;              	// Byte 6
      data[6] = min_id;              	// Byte 7
-     data[7] = orion_checksum(data, CAN_LEN);  // Byte 8
+     //data[7] = orion_checksum(data, CAN_LEN);  // Byte 8
 
      // --------- CAN transmit ----------
      CAN_TxHeaderTypeDef txHeader = {0};
@@ -623,7 +637,7 @@ int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
      txHeader.ExtId = 0x1839F380 + module_number;
      txHeader.IDE   = CAN_ID_EXT;
      txHeader.RTR   = CAN_RTR_DATA;
-     txHeader.DLC   = CAN_LEN;
+     //txHeader.DLC   = CAN_LEN;
 
      HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
  }
