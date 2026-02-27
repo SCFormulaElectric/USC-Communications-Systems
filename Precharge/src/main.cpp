@@ -47,6 +47,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
     This handler is entered 
     */
     // Everything else stays almost the same, just change TIM2 to TIM1
+    if (TIM1->SR & TIM_SR_CC1IF){
     uint32_t ovf = overflow_count_post;
     uint16_t cap = TIM1->CCR1;
 
@@ -70,6 +71,7 @@ extern "C" void TIM1_CC_IRQHandler(void) {
         }
     last_capture_32_post = current_capture_32_post;
     TIM1->SR = ~TIM_SR_CC1IF;
+    }
 }
 
 
@@ -290,6 +292,7 @@ int main() {
     Timer_Input_Init();       // Configure PA6 as AF2 (TIM1_CH1), PA7 as TIM17
     TIM1_Config();
     TIM17_Config();
+    Configure_GPIOA_Pins();
     SysTick_Config(SystemCoreClock / 1000);
 
     
