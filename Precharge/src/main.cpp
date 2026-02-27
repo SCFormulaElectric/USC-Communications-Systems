@@ -42,6 +42,7 @@ extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
 
 
 extern "C" void TIM1_CC_IRQHandler(void) {
+
     /*
     This handler is entered 
     */
@@ -276,6 +277,13 @@ void Configure_GPIOA_Pins(void) {
                       (1U << (11 * 2)));  // Set PA11 as Output
 }
 
+typedef enum {
+    STATE_IDLE,
+    STATE_PRECHARGING,
+    STATE_SAFE,
+    STATE_UNSAFE
+    } precharge_state_t;
+
 // --- Main ---
 int main() {
     SystemClock_Config_HSE(); // Set to 8MHz External Crystal
@@ -298,16 +306,9 @@ int main() {
     uint16_t is_pa2_high = 0;
     //-------------------------------------
 
-    volatile bool charged_flag = 0;
-    uint32_t start_time = 0;//initlize with another time because systic is to slow, we are recording within a milisecond
-    uint32_t current_time = 0;
-
-    typedef enum {
-    STATE_IDLE,
-    STATE_PRECHARGING,
-    DONE,
-    STATE_FAULT
-    } precharge_state_t;
+    uint8_t charged = 0;
+    uint8_t start = 0;
+    uint32_t start_time = 0;
 
     precharge_state_t system_state = STATE_IDLE;
 
@@ -326,15 +327,7 @@ int main() {
         __enable_irq();
 
         is_pa3_high = (GPIOA->IDR & (1U << 3)) ? 1 : 0; //SDC
-        is_pa2_high = (GPIOA->IDR & (1U << 2)) ? 1 : 0;
-        GPIOA->ODR |= (1U <<3);
-        //to turn off GPIOA->ODR |= (1U <<(3 + 16));
-
-        GPIOA->ODR |= (1U <<5);
-        GPIOA->ODR |= (1U <<11);
-
-        
-    
+        is_pa2_high = (GPIOA->IDR & (1U << 2)) ? 1 : 0; // for now we won't deal with CHG, treating ELCON charging & Motor Controller Discharging the Same
 
         if (localDiff_pre > 0){
             localFreq_pre = FREQUENCY / localDiff_pre;
@@ -355,48 +348,61 @@ int main() {
         //ratioFrac  = intermediateResult % 1000;
         //logic start-------------------------------------
         if (localFreq_pre > 0) {
-            ratio_percent = (localFreq_post * 100) / localFreq_pre;
+            ratio_percent = (localFreq_post * 100) / localFreq_pre; // this gives percentage to 2 decimals e.g.
         } else {
             ratio_percent = 0;
         }
         //state machine
 
+
+
         switch (system_state) {
             case STATE_IDLE:
-                // Check if system should start
-                if(!is_pa3_high){ // questionable
-                    charged_flag = 0;
-                }
-                else if(is_pa3_high && !charged_flag){
+                charged = 0;
+                start = 0;
+                start_time = msTicks_post;
+
+                //Set outputs... BSSR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
+                GPIOA->BSSR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
+                GPIOA->BSSR = (1U << (11 + 16)); //PA11 is AIR relay. ONLY SET IN SAFE
+                //to turn off GPIOA->ODR |= (1U <<(3 + 16));
+
+                 GPIOA->BSSR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
+                if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
                 }
                 break;
 
             case STATE_PRECHARGING:
-                if (!is_pa3_high) {
+                if (is_pa3_high) {
                     system_state = STATE_IDLE;
                 }
+                uint32_t elapsed_time = msTicks_post - start_time;
+                if (ratio_percent >= 89){
+                    if (elapsed_time < 1000)
+                        system_state = STATE_UNSAFE;
+                    else if ((elapsed_time >1000) && (elapsed_time <= 2000))
+                        system_state = STATE_SAFE;
+                }
                 else{
-                    if(ratio_percent >= 90){
-                        if (((current_time-start_time)<<5)<=15) {
-                            system_state = STATE_FAULT;
-                        }else{
-                            system_state = DONE;
-                        }
-                    }else{
-                        if (((current_time-start_time)<<4)>=62){
-                            system_state = STATE_FAULT;
-                        }
+                    if (elapsed_time > 2000){
+                        system_state = STATE_UNSAFE;
                     }
                 }
                 break;
-
-            case DONE:
-                charged_flag = 1;
+            case STATE_SAFE:
+                GPIOA->BSSR = (1U <<(1+16)); //Precharge relay
+                GPIOA->BSSR = (1U << (11)); //CLOSE AIR RELAY 
+                GPIOA->BSSR = (1U <<(5 + 16)); // Clear ERROR
+                charged = 1;
                 break;
 
-            case STATE_FAULT:
-                // Permanent lock until reset
+            case STATE_UNSAFE:
+                GPIOA->BSSR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
+                GPIOA->BSSR = (1U << (11 + 16)); //OPEN AIR RELAY
+                GPIOA->BSSR = (1U <<(5)); //ERROR
+                while(1);
+                //How do we begin trying to charge? Should it be power cycled, or should it be on SDC? We'll leave it at Power Cycle
                 break;
         }
     }
