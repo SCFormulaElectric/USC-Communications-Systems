@@ -259,6 +259,23 @@ void TIM17_Config(void) {
        // NVIC_EnableIRQ(TIM17_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)    
  }
 
+//Other gpio configs
+void Configure_GPIOA_Pins(void) {
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN; // enable clock source
+    
+    (void)RCC->IOPENR; //strall
+
+    GPIOA->MODER &= ~((3U << (1 * 2)) |   // Clear PA1 bits [3:2]
+                      (3U << (2 * 2)) |   // Clear PA2 bits [5:4]
+                      (3U << (3 * 2)) |   // Clear PA3 bits [7:6]
+                      (3U << (5 * 2)) |   // Clear PA5 bits [11:10]
+                      (3U << (11 * 2)));  // Clear PA11 bits [23:22]
+
+    GPIOA->MODER |=  ((1U << (1 * 2)) |   // Set PA1 as Output
+                      (1U << (5 * 2)) |   // Set PA5 as Output
+                      (1U << (11 * 2)));  // Set PA11 as Output
+}
+
 // --- Main ---
 int main() {
     SystemClock_Config_HSE(); // Set to 8MHz External Crystal
@@ -277,12 +294,48 @@ int main() {
 
     uint32_t localFreq_pre = 0;
     uint32_t localFreq_post = 0;
+    uint16_t is_pa3_high = 0;
+    uint16_t is_pa2_high = 0;
+    //-------------------------------------
+
+    volatile bool charged_flag = 0;
+    uint32_t start_time = 0;//initlize with another time because systic is to slow, we are recording within a milisecond
+    uint32_t current_time = 0;
+
+    typedef enum {
+    STATE_IDLE,
+    STATE_PRECHARGING,
+    DONE,
+    STATE_FAULT
+    } precharge_state_t;
+
+    precharge_state_t system_state = STATE_IDLE;
+
+    // Ratio thresholds (tune experimentally)
+    uint32_t ratio_threshold = 90;     // 90% means "fully charged"
+    //
+    uint32_t ratio_percent = 0;
+    //-------------------------------------
+
+
     while (1) {
         //gather inputs
         __disable_irq();
         localDiff_pre = diff_pre;
         localDiff_post = diff_post;
         __enable_irq();
+
+        is_pa3_high = (GPIOA->IDR & (1U << 3)) ? 1 : 0; //SDC
+        is_pa2_high = (GPIOA->IDR & (1U << 2)) ? 1 : 0;
+        GPIOA->ODR |= (1U <<3);
+        //to turn off GPIOA->ODR |= (1U <<(3 + 16));
+
+        GPIOA->ODR |= (1U <<5);
+        GPIOA->ODR |= (1U <<11);
+
+        
+    
+
         if (localDiff_pre > 0){
             localFreq_pre = FREQUENCY / localDiff_pre;
         }
@@ -300,9 +353,51 @@ int main() {
 
         //ratioWhole = intermediateResult / 1000;
         //ratioFrac  = intermediateResult % 1000;
-        
+        //logic start-------------------------------------
+        if (localFreq_pre > 0) {
+            ratio_percent = (localFreq_post * 100) / localFreq_pre;
+        } else {
+            ratio_percent = 0;
+        }
+        //state machine
 
-        //logic
+        switch (system_state) {
+            case STATE_IDLE:
+                // Check if system should start
+                if(!is_pa3_high){ // questionable
+                    charged_flag = 0;
+                }
+                else if(is_pa3_high && !charged_flag){
+                    system_state = STATE_PRECHARGING;
+                }
+                break;
 
+            case STATE_PRECHARGING:
+                if (!is_pa3_high) {
+                    system_state = STATE_IDLE;
+                }
+                else{
+                    if(ratio_percent >= 90){
+                        if (((current_time-start_time)<<5)<=15) {
+                            system_state = STATE_FAULT;
+                        }else{
+                            system_state = DONE;
+                        }
+                    }else{
+                        if (((current_time-start_time)<<4)>=62){
+                            system_state = STATE_FAULT;
+                        }
+                    }
+                }
+                break;
+
+            case DONE:
+                charged_flag = 1;
+                break;
+
+            case STATE_FAULT:
+                // Permanent lock until reset
+                break;
+        }
     }
 }
