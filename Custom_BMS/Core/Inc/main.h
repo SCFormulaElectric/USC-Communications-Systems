@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SPI_RDY_Pin GPIO_PIN_3
 #define SPI_RDY_GPIO_Port GPIOA
+#define SPI_nCS_Pin GPIO_PIN_4
+#define SPI_nCS_GPIO_Port GPIOA
 #define Blinky_LED_Pin GPIO_PIN_0
 #define Blinky_LED_GPIO_Port GPIOB
 #define nFAULT_Pin GPIO_PIN_8

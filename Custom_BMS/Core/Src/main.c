@@ -48,6 +48,8 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
+TIM_HandleTypeDef htim6;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -59,14 +61,107 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Comm_Init();
+void Read_Cell_Volts();
+uint16_t crc16(const uint8_t *data, uint32_t len);
+void SPI_frame(uint8_t* frame, uint8_t packet_type, int8_t device_addr, uint16_t reg_addr, uint8_t data[], uint8_t size);
+void delay_us(uint32_t us);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t TX_Data[] = "Hello World!";
+uint8_t TX_Data[15] = "Hello World!";
 uint8_t RX_Buffer[BUFFER_SIZE] = {0};
+
+// LUT for message type
+typedef enum {
+    SINGLE_R,
+	SINGLE_W,
+	STACK_R,
+	STACK_W,
+	BROADCAST_R,
+	BROADCAST_W,
+	BROADCASE_W_REVERSE,
+} init_id_t;
+
+static const uint16_t packet_init_table[7] = {
+    0x80, // SINGLE_R
+	0x90, // SINGLE_W
+	0xA0, // STACK_R
+	0XB0, // STACK_W
+	0XC0, // BROADCAST_R
+	0XD0, // BROADCAST_W
+	0XE0, // BROADCASE_W_REVERSE
+};
+
+// LUTs for device id addresses
+typedef enum {
+	BRIDGE,
+	CELL1,
+	CELL2,
+	CELL3,
+	CELL4,
+	CELL5,
+	CELL6,
+	CELL7,
+	CELL8,
+	CELL9,
+	CELL10,
+	CELL11,
+	CELL12,
+	CELL13,
+	CELL14,
+	CELL15,
+	CELL16,
+} device_id_t;
+
+static const uint16_t device_addr_table[17] = {
+	0x00, // Bridge device
+	0x01, // Cell 1
+	0x02, // Cell 2
+	0x03, // Cell 3
+	0x04, // Cell 4
+	0x05, // Cell 5
+	0x06, // Cell 6
+	0x07, // Cell 7
+	0x08, // Cell 8
+	0x09, // Cell 9
+	0x0A, // Cell 10
+	0x0B, // Cell 11
+	0x0C, // Cell 12
+	0x0D, // Cell 13
+	0x0E, // Cell 14
+	0x0F, // Cell 15
+	0x10, // Cell 16
+};
+
+
+// LUTs for register addresses
+typedef enum {
+	DIR0_ADDR,
+	DIR1_ADDR,
+	CONTROL1,
+	CONTROL2,
+	ACTIVE_CELL,
+	ADC_CTRL1,
+	VCELL16_HI,
+
+} reg_id_t;
+
+static const uint16_t reg_addr_table[7] = {
+	0X306, // DIR0_ADDR
+	0x307, // DIR2_ADDR
+	0x309, // CONTROL1
+	0x30A, // CONTROL2
+	0x0003, // ACTIVE_CELL
+	0x030D, // ADC_CTRL1
+	0x0568, // VCELL16_HI
+};
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -102,18 +197,68 @@ int main(void)
   MX_ADC1_Init();
   MX_CAN1_Init();
   MX_SPI1_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  HAL_SPI_Receive_DMA(&hspi1, RX_Buffer, BUFFER_SIZE);
+
+  Comm_Init();
+  // enable timers
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_TogglePin (GPIOB, GPIO_PIN_0);
+
+//	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3)){ // Read SPI_RDY
+//		  SPI_frame(TX_Data, packet_init_table[SINGLE_R], device_addr_table[BRIDGE], 0x2100, (uint8_t[]){0x00}, 1); // Read a register
+//	  	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+//	  	  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+//	  }
+	  SPI_frame(TX_Data, packet_init_table[SINGLE_R], device_addr_table[BRIDGE], 0x2100, (uint8_t[]){0x00}, 1); // Read a register
+//
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+//
+//	  // 3. Start Frame
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+//	  delay_us(10); // Give the BQ a moment to wake up the SPI port
+//
+//	  // 4. Transmit the command
+//	  HAL_SPI_Transmit(&hspi1, TX_Data, 7, 100);
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+//
+//
+//	  HAL_SPI_Receive(&hspi1, RX_Buffer, 7, 100);
+//
+//	  HAL_Delay(200);
+	  // 1. PHASE ONE: SEND THE COMMAND
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); // nCS Low
+	  HAL_SPI_Transmit(&hspi1, TX_Data, 7, 100);           // Send 7-byte Read Command
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);   // nCS HIGH (Crucial!)
+
+	  // 2. THE WAIT: POLL THE HARDWARE PIN
+	  // The BQ will pull SPI_RDY low here while it talks to the stack.
+	  // You MUST wait for it to go High again.
+	  uint32_t timeout = 10000;
+	  while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3) == GPIO_PIN_RESET && timeout > 0) {
+	      timeout--; // Wait for BQ to be ready
+	  }
+
+	  // 3. PHASE TWO: GET THE DATA
+	  // Response frame for a 1-byte read is 7 bytes: [Header][ID][Addr][Addr][Data][CRC][CRC]
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); // nCS Low again
+	  HAL_SPI_Receive(&hspi1, RX_Buffer, 7, 100);          // Clock out the 7-byte response
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);   // nCS High
+
+	  // 4. MOSI IDLE HIGH HANDOVER
+	  // Your handover logic is correct, but only do it here, after the whole transaction.
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+	  HAL_Delay(500);
+
     /* USER CODE END WHILE */
-	  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
-	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-	  HAL_Delay(200);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -270,7 +415,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -283,6 +428,44 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 7;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 65535;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -323,6 +506,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SPI_nCS_GPIO_Port, SPI_nCS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Blinky_LED_GPIO_Port, Blinky_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : SPI_RDY_Pin nFAULT_Pin */
@@ -330,6 +516,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SPI_nCS_Pin */
+  GPIO_InitStruct.Pin = SPI_nCS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SPI_nCS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Blinky_LED_Pin */
   GPIO_InitStruct.Pin = Blinky_LED_Pin;
@@ -344,14 +537,131 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void delay_us(uint32_t us) {
+//    uint32_t start = TIM2->CNT;
+//    uint32_t duration = us * 16;
+//    while (TIM2->CNT - start < duration);
+	__HAL_TIM_SET_COUNTER(&htim6, 0);
+	HAL_TIM_Base_Start(&htim6);
+	while (__HAL_TIM_GET_COUNTER(&htim6) < us);
+	HAL_TIM_Base_Stop(&htim6);
+}
+
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef * hspi){
 	HAL_SPI_Receive_DMA(&hspi1, RX_Buffer, BUFFER_SIZE);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
 {
-    // TX Done .. Do Something ...
+	if(hspi->Instance == SPI1) {
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET); // Pull CS high only when done
+	}
 }
+
+uint16_t crc16(const uint8_t *data, uint32_t len)
+{
+	uint16_t crc = 0xFFFF; // Initialization
+	//x16+x15+x2+x1 = 1100000000000101
+	uint16_t poly = 0xA001; // Reflected form of 0x8005 since LSB first
+
+	for (uint32_t i = 0; i < len; i++) {
+		crc ^= (uint16_t)data[i];
+		for (uint8_t b = 0; b < 8; b++) {
+			if (crc & 0x0001) {
+				crc = (crc >> 1) ^ poly;
+			} else {
+				crc >>= 1;
+			}
+		}
+	}
+	return crc;
+}
+
+// create SPI frame with format:  initialization byte (1) | device id (1) | reg address (2) | data bytes (<=8) | CRC (2)
+// set device address to -1 if not used
+void SPI_frame(uint8_t* frame, uint8_t packet_type, int8_t device_addr, uint16_t reg_addr, uint8_t data[], uint8_t size){
+	if (size == 0 || size > 8)
+	    return;
+
+	memset(frame, 0, 15);
+	uint8_t total_payload_len = 0;
+	frame[0] = packet_type;
+
+	if (device_addr >= 0){
+		frame[1] = (uint8_t)device_addr;
+		frame[2] = (reg_addr >> 8) & 0xFF;
+		frame[3] = reg_addr & 0xFF;
+		memcpy(&frame[4], data, size);
+		total_payload_len = 4 + size;
+	}
+	else{
+		frame[1] = (reg_addr >> 8) & 0xFF;
+		frame[2] = reg_addr & 0xFF;
+		memcpy(&frame[3], data, size);
+		total_payload_len = 3 + size;
+	}
+
+	uint16_t crc = crc16(frame, total_payload_len);
+	frame[total_payload_len] = crc & 0xFF;        // Low Byte
+	frame[total_payload_len + 1] = (crc >> 8) & 0xFF; // High Byte
+}
+
+void Comm_Init(){
+  // wake ping: pull nCS line low for 2us, pull MOSI line low for 2.75ms, high for 2us, send 90 00 03 09 20 13 95
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+  delay_us(2);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_Delay(2);
+  delay_us(750);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+  delay_us(2);
+
+  HAL_Delay(4);
+
+  SPI_frame(TX_Data, packet_init_table[SINGLE_W], device_addr_table[BRIDGE], reg_addr_table[CONTROL1], (uint8_t[]){0x20}, 1);
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  // then wait ((~1.6 + 10ms) * n stacked devices)
+  HAL_Delay(12);
+
+  // device address self-assignment: sync delay-locked loop
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0343, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN1 - B0 03 43 00 E7 D4
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0344, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN2 - B0 03 44 00 E5 E4
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0345, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN3
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0346, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN4
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0347, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN5
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0348, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN6
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x0349, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN7
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[STACK_W], -1, 0x034A, (uint8_t[]){0x00}, 1); // OPT_ECC_DATAIN8
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+
+  SPI_frame(TX_Data, packet_init_table[BROADCAST_W], -1, reg_addr_table[CONTROL1], (uint8_t[]){0x01}, 1);  // enable auto addressing - D0 03 09 01 0F 74
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[BROADCAST_W], -1, reg_addr_table[DIR0_ADDR], (uint8_t[]){0x00}, 1); // set bridge device - D0 03 06 00 CB 44
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, packet_init_table[BROADCAST_W], -1, reg_addr_table[DIR0_ADDR], (uint8_t[]){0x01}, 1); // set device 1 - D0 03 06 01 0A 84
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+}
+
+
+void Start_Cell_Volts(){
+  SPI_frame(TX_Data, packet_init_table[BROADCAST_W], -1, reg_addr_table[ACTIVE_CELL], (uint8_t[]){0x0A}, 1);  // set active cells - B0 00 03 0A A6 13
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  SPI_frame(TX_Data, &hspi1, -1, reg_addr_table[ADC_CTRL1], (uint8_t[]){0x06}, 1);  // start continuous run ADC
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+  delay_us(250); // 92us + (5us x TOTALBOARDS)
+  SPI_frame(TX_Data, packet_init_table[STACK_R], -1, reg_addr_table[VCELL16_HI], (uint8_t[]){0x1F}, 1);  // start continuous run ADC
+  HAL_SPI_Transmit_DMA(&hspi1, TX_Data, sizeof(TX_Data));
+}
+
+
 /* USER CODE END 4 */
 
 /**
