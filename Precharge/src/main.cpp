@@ -169,7 +169,7 @@ void Timer_Input_Init(void) {
     //Before we tested with pull down, now external 3.3V pull up so remove.
     //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
     //GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD0_Pos);
-    // GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
+     //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
     // GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
     GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
     GPIOA->PUPDR |= (1U << GPIO_PUPDR_PUPD0_Pos);
@@ -368,15 +368,6 @@ int main() {
 
 
     while (1) {
-        if (msTicks - uartTestDealy > 500){
-            uartTestDealy = msTicks;
-            uartTx('t');
-            uartTx('e');
-            uartTx('s');
-            uartTx('t');
-            uartTx('\r');
-            uartTx('\n');
-        }
         //gather inputs
         __disable_irq();
         localDiff_pre = diff_pre;
@@ -409,12 +400,28 @@ int main() {
             ratio_percent = 0;
         }
         //state machine
+        if (msTicks - uartTestDealy > 500){
+            uartTestDealy = msTicks;
+            uartTx('F');
+            uartTx('R');
+            uartTx(' ');
+            digitUartTx(localFreq_pre);
+            uartTx(' ');
+            uartTx(' ');
+            uartTx('F');
+            uartTx('O');
+            uartTx(' ');
+            digitUartTx(localFreq_post);
+            uartTx('\r');
+            uartTx('\n');
+        }
 
 
 
         switch (system_state) {
             case STATE_IDLE:
-                start_time = msTicks;
+                uartTx('I');
+                
 
                 //Set outputs... BSRR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
@@ -424,10 +431,12 @@ int main() {
                 //GPIOA->BSRR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
+                    start_time = msTicks;
                 }
                 break;
 
             case STATE_PRECHARGING:
+                uartTx('P');
                 if (is_pa3_high) {
                     system_state = STATE_IDLE;
                 }
@@ -435,16 +444,17 @@ int main() {
                 if (ratio_percent >= 89){
                     if (elapsed_time < 1000)
                         system_state = STATE_UNSAFE;
-                    else if ((elapsed_time >1000) && (elapsed_time <= 2000))
+                    else if ((elapsed_time >1000) && (elapsed_time <= 20000))
                         system_state = STATE_SAFE;
                 }
                 else{
-                    if (elapsed_time > 2000){
+                    if (elapsed_time > 20000){
                         system_state = STATE_UNSAFE;
                     }
                 }
                 break;
             case STATE_SAFE:
+                uartTx('S');
                 GPIOA->BSRR = (1U <<(1+16)); //Precharge relay
                 GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY 
                 //GPIOA->BSRR = (1U <<(5 + 16)); // Clear ERROR
@@ -452,6 +462,8 @@ int main() {
                 break;
 
             case STATE_UNSAFE:
+            system_state = STATE_IDLE;
+                uartTx('U');
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //OPEN AIR RELAY
                 //GPIOA->BSRR = (1U <<(5)); //ERROR
