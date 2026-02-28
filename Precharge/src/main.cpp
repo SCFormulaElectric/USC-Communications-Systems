@@ -262,6 +262,18 @@ void TIM17_Config(void) {
        // NVIC_EnableIRQ(TIM17_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)    
  }
 
+ void TIM3_Config(void){
+    RCC->APBENR1 |= RCC_APBENR1_TIM3EN;
+    TIM3->ARR = 0xFFFF;
+    TIM3->EGR |= TIM_EGR_UG;
+    TIM3->CR1 |= TIM_CR1_CEN;
+ }
+
+ void Delay_uS(uint16_t us){
+    TIM3->CNT = 0;
+    uint32_t target = us * 8;
+    while (TIM3->CNT < target);
+ }
 //Other gpio configs
 void Configure_GPIOA_Pins(void) {
     RCC->IOPENR |= RCC_IOPENR_GPIOAEN; // enable clock source
@@ -275,8 +287,39 @@ void Configure_GPIOA_Pins(void) {
                       (3U << (11 * 2)));  // Clear PA11 bits [23:22]
 
     GPIOA->MODER |=  ((1U << (1 * 2)) |   // Set PA1 as Output
-                      (1U << (5 * 2)) |   // Set PA5 as Output
+                      GPIO_MODER_MODE5_0 | //(1U << (5 * 2)) |   // Set PA5 as Output [not setting as output for UART]
                       (1U << (11 * 2)));  // Set PA11 as Output
+    GPIOA->BSSR = GPIO_BSSR_BS5; //set high
+}
+
+void uartTx(uint8_t data){
+    __disable_irq();
+    GPIOA->BSSR = GPIO_BSSR_BR5;
+    Delay_uS(104);
+    for (int i = 0; i < 8; i++){
+        if (data & (1 << i)){
+            GPIOA->BSSR = GPIO_BSSR_BS5;
+        }
+        else{
+            GPIOA->BSSR = GPIO_BSSR_BR5;
+        }
+        Delay_uS(104);
+    }
+    GPIOA->BSSR = GPIO_BSSR_BS5;
+    Delay_uS(104);
+    __enable_irq();
+
+}
+
+void digitUartTx(int number){
+    char thousands = number /1000 + '0';
+    char hundreds = (number/100) % 10 + '0';
+    char tens = (number/10) % 10 + '0';
+    char ones = number % 10 + '0';
+    uartTx(thousands);
+    uartTx(hundreds);
+    uartTx(tens);
+    uartTx(ones);
 }
 
 typedef enum {
@@ -370,7 +413,7 @@ int main() {
                 GPIOA->BSSR = (1U << (11 + 16)); //PA11 is AIR relay. ONLY SET IN SAFE
                 //to turn off GPIOA->ODR |= (1U <<(3 + 16));
 
-                 GPIOA->BSSR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
+                //GPIOA->BSSR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
                 }
@@ -396,15 +439,15 @@ int main() {
             case STATE_SAFE:
                 GPIOA->BSSR = (1U <<(1+16)); //Precharge relay
                 GPIOA->BSSR = (1U << (11)); //CLOSE AIR RELAY 
-                GPIOA->BSSR = (1U <<(5 + 16)); // Clear ERROR
+                //GPIOA->BSSR = (1U <<(5 + 16)); // Clear ERROR
                 charged = 1;
                 break;
 
             case STATE_UNSAFE:
                 GPIOA->BSSR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSSR = (1U << (11 + 16)); //OPEN AIR RELAY
-                GPIOA->BSSR = (1U <<(5)); //ERROR
-                while(1);
+                //GPIOA->BSSR = (1U <<(5)); //ERROR
+                //while(1);
                 //How do we begin trying to charge? Should it be power cycled, or should it be on SDC? We'll leave it at Power Cycle
                 break;
         }
