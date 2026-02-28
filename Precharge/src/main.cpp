@@ -1,5 +1,5 @@
 #include "stm32c0xx.h"
-
+//SUSPECT ISSUE WITH STATE MACHINE IS ELAPSED TIME, going through PUI -> PUI ->PUI, NO VOLTAGE APPLIED (so i guess )
 //prescalar confing & TIM1IRQ is handled by this;
 //TIMER FREQUENCY. SYSCLK IS AT CONSTANT 8MHz
 #define FREQUENCY 500000UL
@@ -169,8 +169,8 @@ void Timer_Input_Init(void) {
     //Before we tested with pull down, now external 3.3V pull up so remove.
     //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
     //GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD0_Pos);
-     //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
-    // GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
+     GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
     GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
     GPIOA->PUPDR |= (1U << GPIO_PUPDR_PUPD0_Pos);
 }
