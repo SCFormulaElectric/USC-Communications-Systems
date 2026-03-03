@@ -431,7 +431,7 @@ int main() {
                 //GPIOA->BSRR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
-                    start_time = msTicks;
+                    start_time = msTicks; //initialize time 
                 }
                 break;
 
@@ -440,7 +440,8 @@ int main() {
                 if (is_pa3_high) {
                     system_state = STATE_IDLE;
                 }
-                elapsed_time = msTicks - start_time;
+
+                digitUartTx(msTicks/1000);//make a new timer interupt
                 if (ratio_percent >= 89){
                     if (elapsed_time < 1000)
                         system_state = STATE_UNSAFE;
@@ -462,7 +463,7 @@ int main() {
                 break;
 
             case STATE_UNSAFE:
-            system_state = STATE_IDLE;
+            //system_state = STATE_IDLE;
                 uartTx('U');
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //OPEN AIR RELAY

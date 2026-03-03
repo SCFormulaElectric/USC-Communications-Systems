@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_ASM
-  "/Users/tim/Github/USC-Communications-Systems/Precharge/startup/startup_stm32c011xx.s" "/Users/tim/Github/USC-Communications-Systems/Precharge/build/CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj"
+  "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/startup/startup_stm32c011xx.s" "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/build/CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj"
   )
 set(CMAKE_ASM_COMPILER_ID "GNU")
 
@@ -19,14 +19,14 @@ set(CMAKE_TARGET_DEFINITIONS_ASM
 
 # The include file search paths:
 set(CMAKE_ASM_TARGET_INCLUDE_PATH
-  "/Users/tim/Github/USC-Communications-Systems/Precharge/include"
-  "/Users/tim/Github/USC-Communications-Systems/Precharge/include/cmsis"
+  "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/include"
+  "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/include/cmsis"
   )
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/tim/Github/USC-Communications-Systems/Precharge/src/system_stm32c0xx.c" "CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj" "gcc" "CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj.d"
-  "/Users/tim/Github/USC-Communications-Systems/Precharge/src/main.cpp" "CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj" "gcc" "CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj.d"
+  "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/src/system_stm32c0xx.c" "CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj" "gcc" "CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj.d"
+  "/Users/andyzhang/Documents/Formula/USC-Communications-Systems/Precharge/src/main.cpp" "CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj" "gcc" "CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

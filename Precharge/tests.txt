@@ -54,3 +54,10 @@ Continuing.
 BUGS: 
 If frequency is disconnected (e.g. 0V on HV), then diff is never cleared. So frequency = 500_000 / diff; never changes. Defaults to 41?
 Need to check this bug
+
+3/2/2026
+Tested State Machine using urt to print out different breakpoints
+
+found out that msTicks was a lot slower than 1 ms
+
+instead should create another timer for the elapsed_time

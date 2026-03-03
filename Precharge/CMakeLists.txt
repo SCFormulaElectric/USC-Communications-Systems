@@ -4,9 +4,9 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 # 1. Force the toolchain compilers (assuming they are in your PATH)
-set(CMAKE_C_COMPILER "arm-none-eabi-gcc")
-set(CMAKE_CXX_COMPILER "arm-none-eabi-g++")
-set(CMAKE_ASM_COMPILER "arm-none-eabi-gcc")
+set(CMAKE_C_COMPILER "/opt/homebrew/bin/arm-none-eabi-gcc")
+set(CMAKE_CXX_COMPILER "/opt/homebrew/bin/arm-none-eabi-g++")
+set(CMAKE_ASM_COMPILER "/opt/homebrew/bin/arm-none-eabi-gcc")
 
 # 2. Fix "Compiler Not Able to Compile" error
 # CMake tries to link a test program during setup. 
