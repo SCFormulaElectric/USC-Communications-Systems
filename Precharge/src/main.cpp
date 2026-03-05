@@ -269,6 +269,18 @@ void TIM17_Config(void) {
     TIM3->CR1 |= TIM_CR1_CEN;
  }
 
+ void TIM14_Config(void){
+    RCC->APBENR2 |= RCC_APBENR2_TIM14EN;  // correct
+    (void)RCC->APBENR2;                    // stall
+    TIM14->CR1 &= ~TIM_CR1_CEN;
+    TIM14->PSC = 7999;
+    TIM14->ARR = 0xFFFF;
+    TIM14->CNT = 0;
+    TIM14->EGR |= TIM_EGR_UG;
+    TIM14->SR &= ~TIM_SR_UIF;
+    TIM14->CR1 |= TIM_CR1_CEN;
+ }
+
  void Delay_uS(uint16_t us){
     TIM3->CNT = 0;
     uint32_t target = us * 8;
@@ -338,6 +350,7 @@ int main() {
     Configure_GPIOA_Pins();
     SysTick_Config(SystemCoreClock / 1000);
     TIM3_Config();
+    TIM14_Config();
 
     
     uint32_t localDiff_pre = 0;
@@ -354,8 +367,8 @@ int main() {
 
 
 
-    uint32_t start_time = 0;
-    uint32_t elapsed_time = 0;
+    uint16_t start_time = 0;
+    uint16_t elapsed_time = 0;
     uint32_t uartTestDealy = 0;
 
     precharge_state_t system_state = STATE_IDLE;
@@ -417,10 +430,10 @@ int main() {
         }
 
 
-
         switch (system_state) {
             case STATE_IDLE:
                 uartTx('I');
+                elapsed_time = 0;
                 
 
                 //Set outputs... BSRR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
@@ -431,17 +444,21 @@ int main() {
                 //GPIOA->BSRR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
-                    start_time = msTicks; //initialize time 
+                    start_time = TIM14->CNT;  // capture TIM14 snapshot on entry
                 }
                 break;
 
             case STATE_PRECHARGING:
                 uartTx('P');
+                elapsed_time = TIM14->CNT - start_time;
+                digitUartTx(elapsed_time);
+                uartTx('\r');
+                uartTx('\n');
                 if (is_pa3_high) {
                     system_state = STATE_IDLE;
                 }
 
-                digitUartTx(msTicks/1000);//make a new timer interupt
+
                 if (ratio_percent >= 89){
                     if (elapsed_time < 1000)
                         system_state = STATE_UNSAFE;
