@@ -84,12 +84,6 @@ Discarded input sections
  .text          0x00000000        0x0 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
  .data          0x00000000        0x0 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
  .bss           0x00000000        0x0 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .bss.frequency_post
-                0x00000000        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .bss.msTicks_pre
-                0x00000000        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .bss.frequency_pre
-                0x00000000        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
  .text._Z8delay_msm
                 0x00000000       0x38 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
  .group         0x00000000        0xc CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
@@ -395,7 +389,7 @@ LOAD /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x08000000                g_pfnVectors
                 0x080000c0                        . = ALIGN (0x8)
 
-.text           0x080000c0     0x1028
+.text           0x080000c0     0x1010
                 0x080000c0                        . = ALIGN (0x8)
  *(.text)
  .text          0x080000c0      0x114 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/libgcc.a(_udivsi3.o)
@@ -431,153 +425,153 @@ LOAD /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x080005b4       0x38 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
                 0x080005b4                TIM1_BRK_UP_TRG_COM_IRQHandler
  .text.TIM1_CC_IRQHandler
-                0x080005ec       0xb8 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x080005ec       0xb4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
                 0x080005ec                TIM1_CC_IRQHandler
  .text.TIM17_IRQHandler
-                0x080006a4       0xdc CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x080006a4                TIM17_IRQHandler
+                0x080006a0       0xd8 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x080006a0                TIM17_IRQHandler
  .text._Z22SystemClock_Config_HSEv
-                0x08000780       0x78 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000780                SystemClock_Config_HSE()
+                0x08000778       0x78 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000778                SystemClock_Config_HSE()
  .text._Z16Timer_Input_Initv
-                0x080007f8      0x100 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x080007f8                Timer_Input_Init()
+                0x080007f0      0x100 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x080007f0                Timer_Input_Init()
  .text._Z11TIM1_Configv
-                0x080008f8       0xa4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x080008f8                TIM1_Config()
+                0x080008f0       0xa4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x080008f0                TIM1_Config()
  .text._Z12TIM17_Configv
-                0x0800099c       0x80 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x0800099c                TIM17_Config()
+                0x08000994       0x80 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000994                TIM17_Config()
  .text._Z11TIM3_Configv
-                0x08000a1c       0x40 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000a1c                TIM3_Config()
+                0x08000a14       0x40 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000a14                TIM3_Config()
  .text._Z12TIM14_Configv
-                0x08000a5c       0x70 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000a5c                TIM14_Config()
+                0x08000a54       0x70 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000a54                TIM14_Config()
  .text._Z8Delay_uSt
-                0x08000acc       0x3c CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000acc                Delay_uS(unsigned short)
+                0x08000ac4       0x3c CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000ac4                Delay_uS(unsigned short)
  .text._Z20Configure_GPIOA_Pinsv
-                0x08000b08       0x50 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000b08                Configure_GPIOA_Pins()
+                0x08000b00       0x50 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000b00                Configure_GPIOA_Pins()
  .text._Z6uartTxh
-                0x08000b58       0x76 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000b58                uartTx(unsigned char)
+                0x08000b50       0x76 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000b50                uartTx(unsigned char)
  .text._Z11digitUartTxi
-                0x08000bce       0xa8 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000bce                digitUartTx(int)
- *fill*         0x08000c76        0x2 
- .text.main     0x08000c78      0x2e4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x08000c78                main
+                0x08000bc6       0xa8 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000bc6                digitUartTx(int)
+ *fill*         0x08000c6e        0x2 
+ .text.main     0x08000c70      0x2d4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x08000c70                main
  .text.SystemInit
-                0x08000f5c       0x18 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
-                0x08000f5c                SystemInit
+                0x08000f44       0x18 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+                0x08000f44                SystemInit
  .text.SystemCoreClockUpdate
-                0x08000f74       0xc0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
-                0x08000f74                SystemCoreClockUpdate
+                0x08000f5c       0xc0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+                0x08000f5c                SystemCoreClockUpdate
  .text.Reset_Handler
-                0x08001034       0x50 CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj
-                0x08001034                Reset_Handler
+                0x0800101c       0x50 CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj
+                0x0800101c                Reset_Handler
  .text.Default_Handler
-                0x08001084        0x2 CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj
-                0x08001084                USART1_IRQHandler
-                0x08001084                PendSV_Handler
-                0x08001084                NMI_Handler
-                0x08001084                I2C1_IRQHandler
-                0x08001084                DMAMUX1_IRQHandler
-                0x08001084                SPI1_IRQHandler
-                0x08001084                EXTI2_3_IRQHandler
-                0x08001084                ADC1_IRQHandler
-                0x08001084                RTC_IRQHandler
-                0x08001084                TIM16_IRQHandler
-                0x08001084                TIM3_IRQHandler
-                0x08001084                EXTI4_15_IRQHandler
-                0x08001084                RCC_IRQHandler
-                0x08001084                DMA1_Channel1_IRQHandler
-                0x08001084                Default_Handler
-                0x08001084                TIM14_IRQHandler
-                0x08001084                EXTI0_1_IRQHandler
-                0x08001084                SVC_Handler
-                0x08001084                WWDG_IRQHandler
-                0x08001084                DMA1_Channel2_3_IRQHandler
-                0x08001084                USART2_IRQHandler
-                0x08001084                FLASH_IRQHandler
-                0x08001084                HardFault_Handler
- *fill*         0x08001086        0x2 
+                0x0800106c        0x2 CMakeFiles/precharge_c011.elf.dir/startup/startup_stm32c011xx.s.obj
+                0x0800106c                USART1_IRQHandler
+                0x0800106c                PendSV_Handler
+                0x0800106c                NMI_Handler
+                0x0800106c                I2C1_IRQHandler
+                0x0800106c                DMAMUX1_IRQHandler
+                0x0800106c                SPI1_IRQHandler
+                0x0800106c                EXTI2_3_IRQHandler
+                0x0800106c                ADC1_IRQHandler
+                0x0800106c                RTC_IRQHandler
+                0x0800106c                TIM16_IRQHandler
+                0x0800106c                TIM3_IRQHandler
+                0x0800106c                EXTI4_15_IRQHandler
+                0x0800106c                RCC_IRQHandler
+                0x0800106c                DMA1_Channel1_IRQHandler
+                0x0800106c                Default_Handler
+                0x0800106c                TIM14_IRQHandler
+                0x0800106c                EXTI0_1_IRQHandler
+                0x0800106c                SVC_Handler
+                0x0800106c                WWDG_IRQHandler
+                0x0800106c                DMA1_Channel2_3_IRQHandler
+                0x0800106c                USART2_IRQHandler
+                0x0800106c                FLASH_IRQHandler
+                0x0800106c                HardFault_Handler
+ *fill*         0x0800106e        0x2 
  .text.__libc_init_array
-                0x08001088       0x48 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libg_nano.a(libc_a-init.o)
-                0x08001088                __libc_init_array
+                0x08001070       0x48 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libg_nano.a(libc_a-init.o)
+                0x08001070                __libc_init_array
  *(.glue_7)
- .glue_7        0x080010d0        0x0 linker stubs
+ .glue_7        0x080010b8        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x080010d0        0x0 linker stubs
+ .glue_7t       0x080010b8        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x080010d0        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
+ .eh_frame      0x080010b8        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
  *(.init)
- .init          0x080010d0        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crti.o
-                0x080010d0                _init
- .init          0x080010d4        0x8 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtn.o
+ .init          0x080010b8        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crti.o
+                0x080010b8                _init
+ .init          0x080010bc        0x8 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtn.o
  *(.fini)
- .fini          0x080010dc        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crti.o
-                0x080010dc                _fini
- .fini          0x080010e0        0x8 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtn.o
-                0x080010e8                        . = ALIGN (0x8)
-                0x080010e8                        _etext = .
+ .fini          0x080010c4        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crti.o
+                0x080010c4                _fini
+ .fini          0x080010c8        0x8 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtn.o
+                0x080010d0                        . = ALIGN (0x8)
+                0x080010d0                        _etext = .
 
-.vfp11_veneer   0x080010e8        0x0
- .vfp11_veneer  0x080010e8        0x0 linker stubs
+.vfp11_veneer   0x080010d0        0x0
+ .vfp11_veneer  0x080010d0        0x0 linker stubs
 
-.v4_bx          0x080010e8        0x0
- .v4_bx         0x080010e8        0x0 linker stubs
+.v4_bx          0x080010d0        0x0
+ .v4_bx         0x080010d0        0x0 linker stubs
 
-.iplt           0x080010e8        0x0
- .iplt          0x080010e8        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
+.iplt           0x080010d0        0x0
+ .iplt          0x080010d0        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
 
-.rodata         0x080010e8       0x40
-                0x080010e8                        . = ALIGN (0x8)
+.rodata         0x080010d0       0x40
+                0x080010d0                        . = ALIGN (0x8)
  *(.rodata)
  *(.rodata*)
  .rodata.AHBPrescTable
-                0x080010e8       0x40 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
-                0x080010e8                AHBPrescTable
-                0x08001128                        . = ALIGN (0x8)
+                0x080010d0       0x40 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+                0x080010d0                AHBPrescTable
+                0x08001110                        . = ALIGN (0x8)
 
-.rel.dyn        0x08001128        0x0
- .rel.iplt      0x08001128        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
+.rel.dyn        0x08001110        0x0
+ .rel.iplt      0x08001110        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-.ARM            0x08001128        0x0
-                0x08001128                        __exidx_start = .
+.ARM            0x08001110        0x0
+                0x08001110                        __exidx_start = .
  *(.ARM.exidx*)
-                0x08001128                        __exidx_end = .
+                0x08001110                        __exidx_end = .
 
-.preinit_array  0x08001128        0x0
-                0x08001128                        . = ALIGN (0x8)
-                0x08001128                        PROVIDE (__preinit_array_start = .)
+.preinit_array  0x08001110        0x0
+                0x08001110                        . = ALIGN (0x8)
+                0x08001110                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x08001128                        PROVIDE (__preinit_array_end = .)
+                0x08001110                        PROVIDE (__preinit_array_end = .)
 
-.init_array     0x08001128        0x4
-                0x08001128                        . = ALIGN (0x8)
-                0x08001128                        PROVIDE (__init_array_start = .)
+.init_array     0x08001110        0x4
+                0x08001110                        . = ALIGN (0x8)
+                0x08001110                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array*)
- .init_array    0x08001128        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
-                0x0800112c                        PROVIDE (__init_array_end = .)
+ .init_array    0x08001110        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
+                0x08001114                        PROVIDE (__init_array_end = .)
 
-.fini_array     0x0800112c        0x8
-                0x08001130                        . = ALIGN (0x8)
- *fill*         0x0800112c        0x4 
+.fini_array     0x08001114        0x8
+                0x08001118                        . = ALIGN (0x8)
+ *fill*         0x08001114        0x4 
                 [!provide]                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x08001130        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
+ .fini_array    0x08001118        0x4 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
                 [!provide]                        PROVIDE (__fini_array_end = .)
-                0x08001134                        _sidata = LOADADDR (.data)
+                0x0800111c                        _sidata = LOADADDR (.data)
 
-.data           0x20000000        0x8 load address 0x08001134
+.data           0x20000000        0x8 load address 0x0800111c
                 0x20000000                        . = ALIGN (0x8)
                 0x20000000                        _sdata = .
  *(.data)
@@ -590,16 +584,16 @@ LOAD /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x20000008                        _edata = .
 
 .tm_clone_table
-                0x20000008        0x0 load address 0x0800113c
+                0x20000008        0x0 load address 0x08001124
  .tm_clone_table
                 0x20000008        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
  .tm_clone_table
                 0x20000008        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtend.o
 
-.igot.plt       0x20000008        0x0 load address 0x0800113c
+.igot.plt       0x20000008        0x0 load address 0x08001124
  .igot.plt      0x20000008        0x0 /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/15.2.1/thumb/v6-m/nofp/crtbegin.o
 
-.bss            0x20000008       0x48 load address 0x0800113c
+.bss            0x20000008       0x48 load address 0x08001124
                 0x20000008                        . = ALIGN (0x4)
                 0x20000008                        _sbss = .
                 0x20000008                        __bss_start__ = _sbss
@@ -614,22 +608,22 @@ LOAD /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-no
  .bss.overflow_count_post
                 0x20000028        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
                 0x20000028                overflow_count_post
- .bss.current_capture_32_post
-                0x2000002c        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x2000002c                current_capture_32_post
- .bss.diff_post
-                0x20000030        0x2 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x20000030                diff_post
- *fill*         0x20000032        0x2 
- .bss.last_capture_32_post
-                0x20000034        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x20000034                last_capture_32_post
- .bss._ZL19is_initialized_post
-                0x20000038        0x1 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- *fill*         0x20000039        0x3 
  .bss.overflow_count_pre
-                0x2000003c        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                0x2000003c                overflow_count_pre
+                0x2000002c        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x2000002c                overflow_count_pre
+ .bss.current_capture_32_post
+                0x20000030        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x20000030                current_capture_32_post
+ .bss.diff_post
+                0x20000034        0x2 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x20000034                diff_post
+ *fill*         0x20000036        0x2 
+ .bss.last_capture_32_post
+                0x20000038        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                0x20000038                last_capture_32_post
+ .bss._ZL19is_initialized_post
+                0x2000003c        0x1 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+ *fill*         0x2000003d        0x3 
  .bss.current_capture_32_pre
                 0x20000040        0x4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
                 0x20000040                current_capture_32_pre
@@ -648,7 +642,7 @@ LOAD /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x20000050                        __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x20000050      0x600 load address 0x0800113c
+                0x20000050      0x600 load address 0x08001124
                 0x20000050                        . = ALIGN (0x8)
                 [!provide]                        PROVIDE (end = .)
                 [!provide]                        PROVIDE (_end = .)
@@ -691,13 +685,13 @@ LOAD linker stubs
  .comment       0x00000045        0x0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
                                  0x46 (size before relaxing)
 
-.debug_info     0x00000000     0x1160
- .debug_info    0x00000000      0xdf4 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .debug_info    0x00000df4      0x36c CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+.debug_info     0x00000000     0x1125
+ .debug_info    0x00000000      0xdb9 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+ .debug_info    0x00000db9      0x36c CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
 
-.debug_abbrev   0x00000000      0x47e
- .debug_abbrev  0x00000000      0x365 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .debug_abbrev  0x00000365      0x119 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+.debug_abbrev   0x00000000      0x43b
+ .debug_abbrev  0x00000000      0x322 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+ .debug_abbrev  0x00000322      0x119 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
 
 .debug_aranges  0x00000000       0xd8
  .debug_aranges
@@ -735,14 +729,14 @@ LOAD linker stubs
  .debug_macro   0x0000a939      0xaba CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
  .debug_macro   0x0000b3f3      0x4db CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
 
-.debug_line     0x00000000      0xdfb
- .debug_line    0x00000000      0xa1b CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
- .debug_line    0x00000a1b      0x3e0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+.debug_line     0x00000000      0xdea
+ .debug_line    0x00000000      0xa0a CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+ .debug_line    0x00000a0a      0x3e0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
 
-.debug_str      0x00000000    0x3ba63
- .debug_str     0x00000000    0x3ba63 CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
-                              0x3ba07 (size before relaxing)
- .debug_str     0x0003ba63        0x0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
+.debug_str      0x00000000    0x3ba3a
+ .debug_str     0x00000000    0x3ba3a CMakeFiles/precharge_c011.elf.dir/src/main.cpp.obj
+                              0x3b9de (size before relaxing)
+ .debug_str     0x0003ba3a        0x0 CMakeFiles/precharge_c011.elf.dir/src/system_stm32c0xx.c.obj
                               0x3aba9 (size before relaxing)
 
 .debug_frame    0x00000000      0x308

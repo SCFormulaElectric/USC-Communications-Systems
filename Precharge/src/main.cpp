@@ -6,21 +6,15 @@
 
 // POST-AIR Global Variables
 volatile uint32_t msTicks = 0;
-volatile uint32_t frequency_post = 0;
 volatile uint32_t overflow_count_post = 0;
+volatile uint32_t overflow_count_pre = 0;
 
-// POST-AIR - Volatile variables that are only global for GDB/testing
+// DEBUG ONLY - global for GDB visibility
 volatile uint32_t current_capture_32_post = 0;
 volatile uint16_t diff_post = 0;
 volatile uint32_t last_capture_32_post = 0;
 static volatile uint8_t is_initialized_post = 0;
 
-// // PRE-AIR - Global variables
-volatile uint32_t msTicks_pre = 0;
-volatile uint32_t frequency_pre = 0;
-volatile uint32_t overflow_count_pre = 0;
-
-// // PRE-AIR - Volatile variables that are only global for GDB/testing
 volatile uint32_t current_capture_32_pre = 0;
 volatile uint16_t diff_pre = 0;
 volatile uint32_t last_capture_32_pre = 0;
@@ -35,7 +29,6 @@ extern "C" void SysTick_Handler(void) {
 extern "C" void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
     if (TIM1->SR & TIM_SR_UIF) {
         overflow_count_post++;
-        //TIM1->SR &= ~TIM_SR_UIF; // Clear flag
         TIM1->SR = ~TIM_SR_UIF;
     }
 }
@@ -59,11 +52,6 @@ extern "C" void TIM1_CC_IRQHandler(void) {
     if (is_initialized_post) {
             //period between rising edges ((T+Tn) - T) = Tn
             diff_post = current_capture_32_post - last_capture_32_post;
-
-            if (diff_post > 0) {
-                // you can 
-                //frequency_post = FREQUENCY / diff_post; 
-            }
     }
     else {
             // This handles case where only 1 rising edge has occured and diff calc is undf
@@ -92,10 +80,6 @@ extern "C" void TIM1_CC_IRQHandler(void) {
                  //period between rising edges ((T+Tn) - T) = Tn
                  diff_pre = current_capture_32_pre - last_capture_32_pre;
 
-                 if (diff_pre > 0) {
-                     // you can 
-                     //frequency_pre = FREQUENCY / diff_pre; 
-                 }
          }
          else {
                  // This handles case where only 1 rising edge has occured and diff calc is undf
@@ -167,8 +151,6 @@ void Timer_Input_Init(void) {
     GPIOA->AFR[0] |= (5U << GPIO_AFRL_AFSEL7_Pos);
 
     //Before we tested with pull down, now external 3.3V pull up so remove.
-    //GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
-    //GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD0_Pos);
     GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD7_Msk); 
      GPIOA->PUPDR |= (2U << GPIO_PUPDR_PUPD7_Pos);
     GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk); 
@@ -195,18 +177,7 @@ void TIM1_Config(void) {
     //set channel 1 to input
     TIM1->CCMR1 |= TIM_CCMR1_CC1S_0;
     
-    //digital input filter we treid with no effect
-
-    //TIM1->CCMR1 &= ~TIM_CCMR1_IC1F;
-    //TIM1->CCMR1 |= (9U << TIM_CCMR1_IC1F_Pos);
-    //TIM1->CCMR1 |= (7U << TIM_CCMR1_IC1F_Pos); // set 0111 for 4uS filter at 8MHz clock
-    
-
-    //Filter not needed
-    //TIM1->CCMR1 &= ~TIM_CCMR1_IC1F; 
-    
     // rising edge capture mode CC1P=0, CC1NP=0 switched to falling mode
-    //TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
     TIM1->CCER |= TIM_CCER_CC1P;
     
     // channel 1 capture enabled; on every rising edge, TIM1 CCR1 = TIM1 CNT
@@ -238,13 +209,8 @@ void TIM17_Config(void) {
 
 //     //set channel 1 to input
        TIM17->CCMR1 |= TIM_CCMR1_CC1S_0;
-    
 
-//     //Filter not needed
-       //TIM17->CCMR1 &= ~TIM_CCMR1_IC1F; 
-    
        // rising edge capture mode CC1P=0, CC1NP=0 switched to falling edge
-       //TIM17->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
        TIM17->CCER |= TIM_CCER_CC1P;
     
 //     // channel 1 capture enabled; on every rising edge, TIM17 CCR1 = TIM17 CNT
@@ -252,14 +218,11 @@ void TIM17_Config(void) {
 
      // Enable Capture/Compare Interrupt 
        TIM17->DIER |= (TIM_DIER_UIE | TIM_DIER_CC1IE);
-       //TIM17->DIER |= (TIM_DIER_UIE | TIM_DIER_CC2IE);   // why interrupt 2? Im trying with one first
-
 //     //start timer
        TIM17->CR1 |= TIM_CR1_CEN;
 
 //     //enable  TIM17 Capture Compare interrupts
        NVIC_EnableIRQ(TIM17_IRQn);
-       // NVIC_EnableIRQ(TIM17_BRK_UP_TRG_COM_IRQn); //also enable the IRQ for update interrupt flag (Overflow)    
  }
 
  void TIM3_Config(void){
@@ -292,11 +255,11 @@ void Configure_GPIOA_Pins(void) {
     
     (void)RCC->IOPENR; //strall
 
-    GPIOA->MODER &= ~((3U << (1 * 2)) |   // Clear PA1 bits [3:2]
-                      (3U << (2 * 2)) |   // Clear PA2 bits [5:4]
-                      (3U << (3 * 2)) |   // Clear PA3 bits [7:6]
-                      (3U << (5 * 2)) |   // Clear PA5 bits [11:10]
-                      (3U << (11 * 2)));  // Clear PA11 bits [23:22]
+    GPIOA->MODER &= ~((3U << (1 * 2)) |   // Clear PA1 bits [3:2] (output) Precharge Relay
+                      (3U << (2 * 2)) |   // Clear PA2 bits [5:4] (input) CHG signal
+                      (3U << (3 * 2)) |   // Clear PA3 bits [7:6] (input) SDC
+                      (3U << (5 * 2)) |   // Clear PA5 bits [11:10] (output) UART TX
+                      (3U << (11 * 2)));  // Clear PA11 bits [23:22] (output) AIR Relay
 
     GPIOA->MODER |=  ((1U << (1 * 2)) |   // Set PA1 as Output
                       GPIO_MODER_MODE5_0 | //(1U << (5 * 2)) |   // Set PA5 as Output [not setting as output for UART]
@@ -322,7 +285,7 @@ void uartTx(uint8_t data){
     __enable_irq();
 
 }
-
+// NOTE: only handles 0-9999
 void digitUartTx(int number){
     char thousands = number /1000 + '0';
     char hundreds = (number/100) % 10 + '0';
@@ -377,8 +340,6 @@ int main() {
 
     //
     uint32_t ratio_percent = 0;
-    //-------------------------------------
-
 
     while (1) {
         //gather inputs
@@ -439,9 +400,7 @@ int main() {
                 //Set outputs... BSRR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //PA11 is AIR relay. ONLY SET IN SAFE
-                //to turn off GPIOA->ODR |= (1U <<(3 + 16));
 
-                //GPIOA->BSRR = (1U <<(5)); //PA5 is precharge_fault we'll actually keep this high until we establish unfaulted?
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
                     start_time = TIM14->CNT;  // capture TIM14 snapshot on entry
@@ -475,18 +434,13 @@ int main() {
                 uartTx('S');
                 GPIOA->BSRR = (1U <<(1+16)); //Precharge relay
                 GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY 
-                //GPIOA->BSRR = (1U <<(5 + 16)); // Clear ERROR
 
                 break;
 
             case STATE_UNSAFE:
-            //system_state = STATE_IDLE;
                 uartTx('U');
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //OPEN AIR RELAY
-                //GPIOA->BSRR = (1U <<(5)); //ERROR
-                //while(1);
-                //How do we begin trying to charge? Should it be power cycled, or should it be on SDC? We'll leave it at Power Cycle
                 break;
         }
     }
