@@ -262,9 +262,9 @@ void Configure_GPIOA_Pins(void) {
                       (3U << (11 * 2)));  // Clear PA11 bits [23:22] (output) AIR Relay
 
     GPIOA->MODER |=  ((1U << (1 * 2)) |   // Set PA1 as Output
-                      GPIO_MODER_MODE5_0 | //(1U << (5 * 2)) |   // Set PA5 as Output [not setting as output for UART]
+                      (1U << (5 * 2)) | //(1U << (5 * 2)) |   // Set PA5 as Output [not setting as output for UART]
                       (1U << (11 * 2)));  // Set PA11 as Output
-    GPIOA->BSRR = GPIO_BSRR_BS5; //set high
+    //GPIOA->BSRR = GPIO_BSRR_BS5; //set high
 }
 
 void uartTx(uint8_t data){
@@ -335,6 +335,10 @@ int main() {
     uint32_t uartTestDealy = 0;
 
     precharge_state_t system_state = STATE_IDLE;
+    //set precharge fault low: 
+    GPIOA->BSRR = (1U <<(5 + 16));
+    GPIOA->BSRR = (1U <<(1 + 16)); //no trickle
+    GPIOA->BSRR = (1U <<(11 + 16)); // make sure glv not connected to air relay
 
     // Ratio thresholds (tune experimentally)
 
@@ -342,14 +346,15 @@ int main() {
     uint32_t ratio_percent = 0;
 
     while (1) {
+
         //gather inputs
         __disable_irq();
         localDiff_pre = diff_pre;
         localDiff_post = diff_post;
         __enable_irq();
 
-        is_pa3_high = (GPIOA->IDR & (1U << 3)) ? 1 : 0; //SDC
-        is_pa2_high = (GPIOA->IDR & (1U << 2)) ? 1 : 0; // for now we won't deal with CHG, treating ELCON charging & Motor Controller Discharging the Same
+        is_pa3_high = (GPIOA->IDR & (1U << 3)) ? 1 : 0; //CHG,for now we won't deal with CHG, treating ELCON charging & Motor Controller Discharging the Same
+        is_pa2_high = (GPIOA->IDR & (1U << 2)) ? 1 : 0; // SDC
 
         if (localDiff_pre > 0){
             localFreq_pre = FREQUENCY / localDiff_pre;
@@ -374,54 +379,56 @@ int main() {
             ratio_percent = 0;
         }
         //state machine
-        if (msTicks - uartTestDealy > 500){
-            uartTestDealy = msTicks;
-            uartTx('F');
-            uartTx('R');
-            uartTx(' ');
-            digitUartTx(localFreq_pre);
-            uartTx(' ');
-            uartTx(' ');
-            uartTx('F');
-            uartTx('O');
-            uartTx(' ');
-            digitUartTx(localFreq_post);
-            uartTx('\r');
-            uartTx('\n');
-        }
+        //if (msTicks - uartTestDealy > 500){
+        //    uartTestDealy = msTicks;
+        //    uartTx('F');
+        //    uartTx('R');
+        //    uartTx(' ');
+        //    digitUartTx(localFreq_pre);
+        //    uartTx(' ');
+        //    uartTx(' ');
+        //    uartTx('F');
+        //    uartTx('O');
+        //    uartTx(' ');
+        //    digitUartTx(localFreq_post);
+        //    uartTx('\r');
+        //    uartTx('\n');
+        //}
 
 
         switch (system_state) {
             case STATE_IDLE:
-                uartTx('I');
+
                 elapsed_time = 0;
                 
 
                 //Set outputs... BSRR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //PA11 is AIR relay. ONLY SET IN SAFE
+                GPIOA->BSRR = (1U << (5 + 16));
 
                 if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
                     system_state = STATE_PRECHARGING;
                     start_time = TIM14->CNT;  // capture TIM14 snapshot on entry
+                    GPIOA->BSRR = (1U <<(1));  // if SDC chillin, we start tricklin
                 }
                 break;
 
             case STATE_PRECHARGING:
-                uartTx('P');
+                //GPIOA->BSRR = (1U << (5 + 0)); //let's just do this for debugging
+
                 elapsed_time = TIM14->CNT - start_time;
-                digitUartTx(elapsed_time);
-                uartTx('\r');
-                uartTx('\n');
-                if (is_pa3_high) {
+                //digitUartTx(elapsed_time);
+
+                if (is_pa2_high) {
                     system_state = STATE_IDLE;
                 }
 
 
                 if (ratio_percent >= 89){
-                    if (elapsed_time < 1000)
+                    if (elapsed_time < 10000)
                         system_state = STATE_UNSAFE;
-                    else if ((elapsed_time >1000) && (elapsed_time <= 20000))
+                    else if ((elapsed_time >10000) && (elapsed_time <= 20000))
                         system_state = STATE_SAFE;
                 }
                 else{
@@ -431,16 +438,18 @@ int main() {
                 }
                 break;
             case STATE_SAFE:
-                uartTx('S');
-                GPIOA->BSRR = (1U <<(1+16)); //Precharge relay
-                GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY 
+
+                GPIOA->BSRR = (1U <<(1+16)); //Precharge relay [clear to 0, nmos low, GLV disconnected]
+                GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY  [set to 1, nmos high, GLV connected]
+                GPIOA->BSRR = (1U << (5 + 16)); 
 
                 break;
 
             case STATE_UNSAFE:
-                uartTx('U');
+
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //OPEN AIR RELAY
+                GPIOA->BSRR = GPIO_BSRR_BS5; //PRECHARGE FAULT WHEN WE've determined that we're unsafe
                 break;
         }
     }

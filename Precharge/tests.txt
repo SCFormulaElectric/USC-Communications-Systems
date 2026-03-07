@@ -61,3 +61,17 @@ Tested State Machine using urt to print out different breakpoints
 found out that msTicks was a lot slower than 1 ms
 
 instead should create another timer for the elapsed_time
+
+
+3/6/2026
+Tested minimum voltaeg difference to accurately determine ~90% is 6V. 
+E.g. if Vpre = 6V and Vpost =3V , then we still trigger a ~90% flag
+Need to determine whehter that is usable or we need to make our freqeuncy sensors better.
+State machine seems to be working.
+We should use a DMM instead of an oscillator to test whehter GND and AIR_EN pins are connected/disconnected
+    As of now, even wehn they should be open they are showing 0V
+Timers are all working
+NO UART on this 
+Probably should have tested UART frequency readings wiht the power supply and then moved to state machine
+Seems the state machine works though
+Just need to verify frequency accuracy, implement frequency zeroing, and read ratios
