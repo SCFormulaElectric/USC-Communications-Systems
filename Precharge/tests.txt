@@ -75,3 +75,14 @@ NO UART on this
 Probably should have tested UART frequency readings wiht the power supply and then moved to state machine
 Seems the state machine works though
 Just need to verify frequency accuracy, implement frequency zeroing, and read ratios
+
+
+3/7/2026
+Probed COMPin on post and PRE lm331s, Vout, and Vout after the opto-isolators
+    - Everything was within 10%. 
+    - Connectors were loose and disconnected easily.
+    - Suggest to redo connectors 
+    - Need to test that MOSFETS's close (ground continuity w/ DMM) [shouldn't be an issue, low priority]
+    - Other than that, logic seems to be good
+    As this is now electrical/testing...
+***Shelving this project for now, considering it done***
