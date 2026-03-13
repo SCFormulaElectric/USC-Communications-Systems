@@ -23,3 +23,10 @@ Another issue is we're off by 1Hz. Only noticed for freq < 100Hz, but could be a
 TODO: Add 2nd timer driver. Port both drivers to their actual pins. (DCDC converter hasn't arrived yet.). Test ratios. Write state machine.
 Add CHG_EN functionality. Refactor to C++ style. Write documentation.
 See tests.txt for functionality.
+
+
+3/13/2026
+    - Set timing to realistic 1-2s
+    - Corrected SDC to be active high (opposite of last year's)
+    - Close AIR relays before opening precharge to avoid voltage leaking
+    

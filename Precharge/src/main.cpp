@@ -405,9 +405,9 @@ int main() {
                 //Set outputs... BSRR in stm32 allows for atomic operations by avoiding RMW. So setting is (1 << x) & resetting is (1 << (x+16)), the 32bit register is halved and the top is clear
                 GPIOA->BSRR = (1U <<(1 + 16)); //PA1 is Precharge resistor relay enable. Setting this low disconnects GLV- from AIR+_en
                 GPIOA->BSRR = (1U << (11 + 16)); //PA11 is AIR relay. ONLY SET IN SAFE
-                GPIOA->BSRR = (1U << (5 + 16));
+                GPIOA->BSRR = (1U << (5 + 16)); // -> PRECHARGE ERROR SIGNAL
 
-                if (!is_pa2_high){ // if SDC is not HIGH, then we are ok to try and precharge
+                if (is_pa2_high){ //[most recently, sdc confirmed to be noninverted unlike last year] if SDC is not HIGH, then we are ok to try and precharge 
                     system_state = STATE_PRECHARGING;
                     start_time = TIM14->CNT;  // capture TIM14 snapshot on entry
                     GPIOA->BSRR = (1U <<(1));  // if SDC chillin, we start tricklin
@@ -420,27 +420,26 @@ int main() {
                 elapsed_time = TIM14->CNT - start_time;
                 //digitUartTx(elapsed_time);
 
-                if (is_pa2_high) {
+                if (!is_pa2_high) {
                     system_state = STATE_IDLE;
                 }
 
 
                 if (ratio_percent >= 89){
-                    if (elapsed_time < 10000)
+                    if (elapsed_time < 1000)
                         system_state = STATE_UNSAFE;
-                    else if ((elapsed_time >10000) && (elapsed_time <= 20000))
+                    else if ((elapsed_time >1000) && (elapsed_time <= 2000))
                         system_state = STATE_SAFE;
                 }
                 else{
-                    if (elapsed_time > 20000){
+                    if (elapsed_time > 2000){
                         system_state = STATE_UNSAFE;
                     }
                 }
                 break;
-            case STATE_SAFE:
-
+            case STATE_SAFE: //here we close air then open relay to avoid any drops in votlage
+                GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY  [set to 1, nmos high, GLV connected] 
                 GPIOA->BSRR = (1U <<(1+16)); //Precharge relay [clear to 0, nmos low, GLV disconnected]
-                GPIOA->BSRR = (1U << (11)); //CLOSE AIR RELAY  [set to 1, nmos high, GLV connected]
                 GPIOA->BSRR = (1U << (5 + 16)); 
 
                 break;
