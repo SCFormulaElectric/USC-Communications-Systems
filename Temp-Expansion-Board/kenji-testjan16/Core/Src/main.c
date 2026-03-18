@@ -75,7 +75,7 @@ void adc_start_dma_4();
 void set_muxOutput(int count);
 
 // lol is this declaration correct?
-int8_t volt2temp(uint16_t adc_buf, int16_t temp_adc_lut[33][2]);
+int8_t volt2temp(uint16_t adc_buf, const int16_t temp_adc_lut[33][2]);
 
 void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT]);
 
@@ -137,7 +137,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   dma_flag = 0;
-  HAL_ADC_Start_DMA(&hadc1, (uint16_t*)adc_buf, 4);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
   char message[8] = "testing";
 
   if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
@@ -524,7 +524,7 @@ void adc_start_dma_4(void)
 {
     dma_flag = 0;
     // Starts regular sequence conversions; DMA stores ADC_CH_COUNT samples
-    HAL_ADC_Start_DMA(&hadc1, (uint16_t*)adc_buf, ADC_CH_COUNT);
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_CH_COUNT);
 }
 
 
@@ -545,7 +545,7 @@ void set_muxOutput(int count){
 }
 
 
-int8_t volt2temp(uint16_t adc_val, int16_t temp_adc_lut[33][2]) {
+int8_t volt2temp(uint16_t adc_val, const int16_t temp_adc_lut[33][2]) {
     /* This function takes in an adc_value and compares it against a look-up table
 
 to get a corresponding temperature value.
@@ -590,7 +590,7 @@ Will linearly interpolate.
 	 // https://www.orionbms.com/downloads/misc/thermistor_module_canbus.pdf
 
 	 // CAN message is 8 bytes long
-     int8_t data[8] = {0};
+     uint8_t data[8] = {0};
 
      // finding min, max, and average
      int8_t min_temp = temp_array[0];
@@ -612,29 +612,32 @@ Will linearly interpolate.
              max_id = i;
          }
      }
-     int8_t avg_temp = (int8_t)(sum / THERM_COUNT);
+     uint8_t avg_temp = (int8_t)(sum / THERM_COUNT);
 
-     char buff3[30];
-     sprintf(buff3, "Min: %d F, Max: %d F, Avg: %d F\r\n", min_temp, max_temp, avg_temp);
+     char buff3[40];
+     snprintf(buff3, sizeof(buff3), "Min: %u C, Max: %u C, Avg: %u C\r\n", min_temp, max_temp, avg_temp);
      HAL_UART_Transmit(&huart1, (uint8_t*) buff3, (uint16_t) strlen(buff3), 100);
 
 
      // --------- Fill payload ----------
-     data[0] = module_number;       	// Byte 1
-     data[1] = (int8_t)min_temp;   	// Byte 2
-     data[2] = (int8_t)max_temp;   	// Byte 3
-     data[3] = (int8_t)avg_temp;   	// Byte 4
-     data[4] = (uint8_t)THERM_COUNT;	// Byte 5
-     data[5] = max_id;              	// Byte 6
-     data[6] = min_id;              	// Byte 7
+     data[0] = 0x00;       	// Byte 1
+     data[1] = (uint8_t)min_temp;   	// Byte 2
+     data[2] = (uint8_t)max_temp;   	// Byte 3
+     data[3] = (uint8_t)avg_temp;   	// Byte 4
+     data[4] = 0x01;	// Byte 5
+     data[5] = 0x01;              	// Byte 6
+     data[6] = 0x00;              	// Byte 7
+	 int checksum = 0;
+	 for (int i = 0; i <7; i++){
+		 checksum += data[i];
+	 }
+	 data[7] = checksum + 0x39 + 0x08; //should b 0x76
      //data[7] = orion_checksum(data, CAN_LEN);  // Byte 8
 
      // --------- CAN transmit ----------
      CAN_TxHeaderTypeDef txHeader = {0};
      uint32_t txMailbox;
-
-     txHeader.StdId = 0;                 // not used
-     txHeader.ExtId = 0x1839F380 + module_number;
+     txHeader.ExtId = 0x1839F380;
      txHeader.IDE   = CAN_ID_EXT;
      txHeader.RTR   = CAN_RTR_DATA;
      //txHeader.DLC   = CAN_LEN;
