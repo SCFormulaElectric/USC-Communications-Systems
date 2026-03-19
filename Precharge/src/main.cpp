@@ -395,7 +395,9 @@ int main() {
         //    uartTx('\n');
         //}
 
-
+        if (!is_pa3_high){
+            system_state = STATE_SAFE;
+        }
         switch (system_state) {
             case STATE_IDLE:
 
