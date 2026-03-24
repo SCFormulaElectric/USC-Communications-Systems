@@ -152,6 +152,7 @@ int main(void)
   	  }
 
   int count_muxpins = 0;
+  set_muxOutput(count_muxpins);    // setting with 0 count initially
 
   timeDelayCAN = HAL_GetTick();
   /* USER CODE END 2 */
@@ -176,7 +177,6 @@ int main(void)
 //	  }
 
 	  // set output pins going to muxes
-	  set_muxOutput(count_muxpins);
 	  HAL_Delay(3);
 	  // when adc_buf finished collecting voltage values
 	  if (dma_flag == 1) {
@@ -196,6 +196,7 @@ int main(void)
 			  //HAL_UART_Transmit(&huart1, (uint8_t*) buffer2, (uint16_t) strlen(buffer2), 100);
 		  }
 		  count_muxpins++;
+		  set_muxOutput(count_muxpins);
 		  adc_start_dma_4();
 	  }
 
@@ -216,6 +217,7 @@ int main(void)
 			  timeDelayCAN = HAL_GetTick();
 		  }
 		  count_muxpins = 0;
+		  set_muxOutput(count_muxpins);  // reset to 0
 	  }
 
   }
@@ -561,16 +563,15 @@ to get a corresponding temperature value.
 Will linearly interpolate.
 */
 
-      // TODO:   maybe also add in something for if the adc read is outside range of lookup table....
-
     int8_t temp = 0;
     int16_t temp16 = 0;
 
+    // out of range - adc value too large
   if (adc_val >= temp_adc_lut[0][1])
   {
     return -128;  // Too cold, return minimum int8_t value.
   }
-
+  // out of range - adc value too small
   else if (adc_val <= temp_adc_lut[32][1])
   {
     return 127;  // Too hot, return maximum int8_t value.
@@ -579,9 +580,14 @@ Will linearly interpolate.
       for (int t = 1; t < 33; t++) {
         if (adc_val > temp_adc_lut[t][1]) {
             // linear interpolation between row t-1 and row t
-            temp16 = temp_adc_lut[t-1][0] +
-                     (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) * (temp_adc_lut[t-1][1]-adc_val) /
-                     (temp_adc_lut[t-1][1] - temp_adc_lut[t][1]);
+
+        	int16_t num = (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) *
+        	              (temp_adc_lut[t-1][1] - adc_val);
+
+        	int16_t den = (temp_adc_lut[t-1][1] - temp_adc_lut[t][1]);
+
+        	temp16 = temp_adc_lut[t-1][0] + (num + (den > 0 ? den/2 : -den/2)) / den;
+
             break;
         }
       }
