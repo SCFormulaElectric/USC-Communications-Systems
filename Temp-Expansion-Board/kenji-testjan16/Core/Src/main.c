@@ -58,6 +58,11 @@ static volatile uint16_t dma_flag;
 CAN_TxHeaderTypeDef txHeader = {0};
 uint32_t txMailbox;
 uint32_t timeDelayCAN = 0;
+uint32_t timeDelayCAN2 = 0;
+uint32_t timeDelayCAN3 = 0;
+uint32_t timeDelayCAN4 = 0;
+volatile int addressclaimFlag = 0;
+volatile uint8_t status;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -152,9 +157,11 @@ int main(void)
   	  }
 
   int count_muxpins = 0;
-  set_muxOutput(count_muxpins);    // setting with 0 count initially
 
   timeDelayCAN = HAL_GetTick();
+  timeDelayCAN2 = HAL_GetTick();
+  timeDelayCAN3 = HAL_GetTick();
+  timeDelayCAN4 = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -177,7 +184,8 @@ int main(void)
 //	  }
 
 	  // set output pins going to muxes
-	  HAL_Delay(3);
+	  set_muxOutput(count_muxpins);
+	  HAL_Delay(1);
 	  // when adc_buf finished collecting voltage values
 	  if (dma_flag == 1) {
 		  dma_flag = 0;
@@ -196,28 +204,34 @@ int main(void)
 			  //HAL_UART_Transmit(&huart1, (uint8_t*) buffer2, (uint16_t) strlen(buffer2), 100);
 		  }
 		  count_muxpins++;
-		  set_muxOutput(count_muxpins);
 		  adc_start_dma_4();
 	  }
 
-	  // read through all 10 on each - can send signal now
+	  // read through all 10 on each
 	  if (count_muxpins == 10) {
-
-		  // Debug UART transmit: confirming CAN message sent after all 40 ADC readings collected.
-		  //char can_msg[] = "Sending CAN message\r\n";
-		  //HAL_UART_Transmit(&huart1, (uint8_t*) can_msg, (uint16_t) strlen(can_msg), 100);
-
-		  // Debug UART transmit: printing all temp_array temperature data.
-		  //char title[] = "Temp array temperature data for all channels:\r\n";
-		 // HAL_UART_Transmit(&huart1, (uint8_t*) title, (uint16_t) strlen(title), 100);
-
-
-		  if (HAL_GetTick() - timeDelayCAN > 200){
-			  send_thermistor_CAN_msg(temp_array);
-			  timeDelayCAN = HAL_GetTick();
-		  }
 		  count_muxpins = 0;
-		  set_muxOutput(count_muxpins);  // reset to 0
+	  }
+	  if (HAL_GetTick() - timeDelayCAN > 100){
+		  send_thermistor_CAN_msg(temp_array);
+		  timeDelayCAN = HAL_GetTick();
+	  }
+	  if (HAL_GetTick() - timeDelayCAN2 > 200){ //broadcast claim
+		  uint8_t data[8];
+		     txHeader.ExtId = 0x18EEFF80;
+		     txHeader.IDE   = CAN_ID_EXT;
+		     txHeader.RTR   = CAN_RTR_DATA;
+		     txHeader.DLC = 8;
+		     data[0] = 0xF3;       	// Byte 1
+		     data[1] = 0x00;   	// Byte 2
+		     data[2] = 0X80;   	// Byte 3
+		     data[3] = 0XF3;   	// Byte 4
+		     data[4] = 0x00;	// thermistor module number default 00
+		     data[5] = 0x40;              	// Byte 6
+		     data[6] = 0x1E;
+		     data[7] = 0x90;
+		     status = HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
+		     timeDelayCAN2 = HAL_GetTick();
+
 	  }
 
   }
@@ -360,7 +374,7 @@ static void MX_CAN_Init(void)
 
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN1;
-  hcan.Init.Prescaler = 4;
+  hcan.Init.Prescaler = 4; // switch this to 8 == Baud Rate 250kbps
   hcan.Init.Mode = CAN_MODE_NORMAL;
   hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan.Init.TimeSeg1 = CAN_BS1_14TQ;
@@ -563,31 +577,27 @@ to get a corresponding temperature value.
 Will linearly interpolate.
 */
 
+      // TODO:   maybe also add in something for if the adc read is outside range of lookup table....
+
     int8_t temp = 0;
     int16_t temp16 = 0;
 
-    // out of range - adc value too large
   if (adc_val >= temp_adc_lut[0][1])
   {
-    return -128;  // Too cold, return minimum int8_t value.
+    return -40;  // Too cold, return minimum oiroinbms temp range;
   }
-  // out of range - adc value too small
+
   else if (adc_val <= temp_adc_lut[32][1])
   {
-    return 127;  // Too hot, return maximum int8_t value.
+    return 85;  // Too hot, return max tep range of orionbms2
   }
   else {
       for (int t = 1; t < 33; t++) {
         if (adc_val > temp_adc_lut[t][1]) {
             // linear interpolation between row t-1 and row t
-
-        	int16_t num = (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) *
-        	              (temp_adc_lut[t-1][1] - adc_val);
-
-        	int16_t den = (temp_adc_lut[t-1][1] - temp_adc_lut[t][1]);
-
-        	temp16 = temp_adc_lut[t-1][0] + (num + (den > 0 ? den/2 : -den/2)) / den;
-
+            temp16 = temp_adc_lut[t-1][0] +
+                     (temp_adc_lut[t][0] - temp_adc_lut[t-1][0]) * (temp_adc_lut[t-1][1]-adc_val) /
+                     (temp_adc_lut[t-1][1] - temp_adc_lut[t][1]);
             break;
         }
       }
@@ -635,18 +645,23 @@ Will linearly interpolate.
 
 
      // --------- Fill payload ----------
+     //debug
+     //min_temp = 40;
+     //max_temp = 40;
+     //avg_temp = 40;
+     //end of debug
      data[0] = 0x00;       	// Byte 1
      data[1] = (uint8_t)min_temp;   	// Byte 2
      data[2] = (uint8_t)max_temp;   	// Byte 3
      data[3] = (uint8_t)avg_temp;   	// Byte 4
-     data[4] = 0x01;	// Byte 5
-     data[5] = 0x01;              	// Byte 6
-     data[6] = 0x00;              	// Byte 7
+     data[4] = 0x28;	// Byte 5
+     data[5] = max_id;              	// Byte 6
+     data[6] = min_id;              	// Byte 7
 	 int checksum = 0;
 	 for (int i = 0; i <7; i++){
 		 checksum += data[i];
 	 }
-	 data[7] = checksum + 0x39 + 0x08; //should b 0x76
+	 data[7] = (checksum + 0x39 + 0x08) & 0xff; //should b 0x76
      //data[7] = orion_checksum(data, CAN_LEN);  // Byte 8
 
      // --------- CAN transmit ----------
@@ -655,7 +670,7 @@ Will linearly interpolate.
      txHeader.RTR   = CAN_RTR_DATA;
      txHeader.DLC = 8;
      //txHeader.DLC   = CAN_LEN;
-     uint8_t status = HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
+     status = HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
      if (status == HAL_ERROR){
     	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
     	 //HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5);
@@ -666,6 +681,7 @@ Will linearly interpolate.
      else if  (status == HAL_BUSY){
     	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
      }
+
  }
 
 /* USER CODE END 4 */
