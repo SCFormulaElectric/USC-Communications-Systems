@@ -144,16 +144,21 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  //HAL_ADCEx_Calibration_Start(&hadc1);
+
+  HAL_Delay(100);
   dma_flag = 0;
+  set_muxOutput(0);
+
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
   char message[8] = "testing";
 
   if(HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), 100) == HAL_OK) {
-  		  HAL_Delay(4000);
+  		  HAL_Delay(400);
   		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-  		  HAL_Delay(4000);
+  		  HAL_Delay(400);
   		  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_5);
-  		  HAL_Delay(4000);
+  		  HAL_Delay(400);
   	  }
 
   int count_muxpins = 0;
@@ -184,12 +189,10 @@ int main(void)
 //	  }
 
 	  // set output pins going to muxes
-	  set_muxOutput(count_muxpins);
-	  HAL_Delay(1);
+
+
 	  // when adc_buf finished collecting voltage values
 	  if (dma_flag == 1) {
-		  dma_flag = 0;
-
 
 		  // convert and load temperatures
 		  for (int m = 0; m < 4; m++) {
@@ -198,19 +201,31 @@ int main(void)
 			   //sprintf(buffer, "Mux %d, channel %d: %d \r\n", m, count_muxpins, adc_buf[m]);
 			   //HAL_UART_Transmit(&huart1, (uint8_t*) buffer, (uint16_t) strlen(buffer), 100);
 
+
+			  // CORRECTION FOR ADC:   0.73 * adc_val + 1022
 			  temp_array[m*10 + count_muxpins] = volt2temp(adc_buf[m], temp_adc_lut);
 			  //char buffer2[20];
+			  if (count_muxpins == 1000 && m==2){
+			 				  char debug_msg[16];
+			 				  uint16_t adc = adc_buf[m];
+			 				  int8_t debug_value = temp_array[m*10 + count_muxpins];
+			 				  sprintf(debug_msg, "%u %d\r\n", adc, debug_value);
+			 				  HAL_UART_Transmit(&huart1, (int8_t*)debug_msg, strlen(debug_msg), 100);
+			 			  }
 			  //sprintf(buffer2, "Temp: %d C\r\n", temp_array[m*10 + count_muxpins]);
 			  //HAL_UART_Transmit(&huart1, (uint8_t*) buffer2, (uint16_t) strlen(buffer2), 100);
 		  }
 		  count_muxpins++;
+		  // read through all 10 on each
+		  if (count_muxpins == 10) {
+			  count_muxpins = 0;
+		  }
+
+		  set_muxOutput(count_muxpins);
+		  HAL_Delay(5);
 		  adc_start_dma_4();
 	  }
 
-	  // read through all 10 on each
-	  if (count_muxpins == 10) {
-		  count_muxpins = 0;
-	  }
 	  if (HAL_GetTick() - timeDelayCAN > 100){
 		  send_thermistor_CAN_msg(temp_array);
 		  timeDelayCAN = HAL_GetTick();
@@ -320,7 +335,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
