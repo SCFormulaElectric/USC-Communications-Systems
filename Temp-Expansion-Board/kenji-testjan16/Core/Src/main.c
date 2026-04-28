@@ -63,6 +63,9 @@ uint32_t timeDelayCAN3 = 0;
 uint32_t timeDelayCAN4 = 0;
 volatile int addressclaimFlag = 0;
 volatile uint8_t status;
+int8_t g_min_temp = 0;
+int8_t g_max_temp = 0;
+int8_t g_avg_temp = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,6 +89,7 @@ void set_muxOutput(int count);
 int8_t volt2temp(uint16_t adc_buf, const int16_t temp_adc_lut[33][2]);
 
 void send_thermistor_CAN_msg(int8_t temp_array[THERM_COUNT]);
+void send_all_temps_CAN(int8_t temp_array[THERM_COUNT]);
 
 /* USER CODE END PFP */
 
@@ -204,13 +208,16 @@ int main(void)
 
 			  // CORRECTION FOR ADC:   0.73 * adc_val + 1022
 			  temp_array[m*10 + count_muxpins] = volt2temp(adc_buf[m], temp_adc_lut);
+			  //if (m <2){
+			  //	  temp_array[m*10 + count_muxpins] = 22;
+			  //}
 			  //char buffer2[20];
-			  if (count_muxpins == 1000 && m==2){
+			  if (count_muxpins == 1000 && m==6){
 			 				  char debug_msg[16];
 			 				  uint16_t adc = adc_buf[m];
 			 				  int8_t debug_value = temp_array[m*10 + count_muxpins];
 			 				  sprintf(debug_msg, "%u %d\r\n", adc, debug_value);
-			 				  HAL_UART_Transmit(&huart1, (int8_t*)debug_msg, strlen(debug_msg), 100);
+			 				  HAL_UART_Transmit(&huart1, (uint8_t*)debug_msg, strlen(debug_msg), 100);
 			 			  }
 			  //sprintf(buffer2, "Temp: %d C\r\n", temp_array[m*10 + count_muxpins]);
 			  //HAL_UART_Transmit(&huart1, (uint8_t*) buffer2, (uint16_t) strlen(buffer2), 100);
@@ -226,27 +233,43 @@ int main(void)
 		  adc_start_dma_4();
 	  }
 
-	  if (HAL_GetTick() - timeDelayCAN > 100){
+	  if (HAL_GetTick() - timeDelayCAN3 > 500){
+	  send_all_temps_CAN(temp_array);
+	  timeDelayCAN3 = HAL_GetTick();
+  }
+	  if(g_min_temp > -40 && g_min_temp <= 55 && g_max_temp <= 55 && g_avg_temp <= 55){
+		  timeDelayCAN4 = HAL_GetTick();
+	  }
+	  else{
+		  timeDelayCAN4 = timeDelayCAN4;
+	  }
+
+  if (HAL_GetTick() - timeDelayCAN > 100){
+	  if(HAL_GetTick() - timeDelayCAN4 < 1000){
 		  send_thermistor_CAN_msg(temp_array);
+
+	  }
 		  timeDelayCAN = HAL_GetTick();
+		  update_temp_stats(temp_array);
 	  }
 	  if (HAL_GetTick() - timeDelayCAN2 > 200){ //broadcast claim
-		  uint8_t data[8];
-		     txHeader.ExtId = 0x18EEFF80;
-		     txHeader.IDE   = CAN_ID_EXT;
-		     txHeader.RTR   = CAN_RTR_DATA;
-		     txHeader.DLC = 8;
-		     data[0] = 0xF3;       	// Byte 1
-		     data[1] = 0x00;   	// Byte 2
-		     data[2] = 0X80;   	// Byte 3
-		     data[3] = 0XF3;   	// Byte 4
-		     data[4] = 0x00;	// thermistor module number default 00
-		     data[5] = 0x40;              	// Byte 6
-		     data[6] = 0x1E;
-		     data[7] = 0x90;
-		     status = HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
-		     timeDelayCAN2 = HAL_GetTick();
-
+		  timeDelayCAN2 = HAL_GetTick();
+		  if (HAL_GetTick() - timeDelayCAN4 < 1000) {
+			  uint8_t data[8];
+			  txHeader.ExtId = 0x18EEFF80;
+			  txHeader.IDE   = CAN_ID_EXT;
+			  txHeader.RTR   = CAN_RTR_DATA;
+			  txHeader.DLC = 8;
+			  data[0] = 0xF3;       	// Byte 1
+			  data[1] = 0x00;   	// Byte 2
+			  data[2] = 0X80;   	// Byte 3
+			  data[3] = 0XF3;   	// Byte 4
+			  data[4] = 0x00;	// thermistor module number default 00
+			  data[5] = 0x40;              	// Byte 6
+			  data[6] = 0x1E;
+			  data[7] = 0x90;
+			  status = HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
+		  }
 	  }
 
   }
@@ -652,7 +675,11 @@ Will linearly interpolate.
              max_id = i;
          }
      }
-     uint8_t avg_temp = (int8_t)(sum / THERM_COUNT);
+     int8_t avg_temp = (int8_t)(sum / THERM_COUNT);
+
+     g_min_temp = min_temp;
+     g_max_temp = max_temp;
+     g_avg_temp = avg_temp;
 
      //char buff3[40];
      //snprintf(buff3, sizeof(buff3), "Min: %u C, Max: %u C, Avg: %u C\r\n", min_temp, max_temp, avg_temp);
@@ -697,6 +724,46 @@ Will linearly interpolate.
     	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
      }
 
+ }
+
+ void update_temp_stats(int8_t temp_array[THERM_COUNT])
+ {
+     int8_t min_temp = temp_array[0];
+     int8_t max_temp = temp_array[0];
+     int16_t sum = 0;
+
+     for (uint8_t i = 0; i < THERM_COUNT; i++) {
+         int8_t t = temp_array[i];
+         sum += t;
+         if (t < min_temp) min_temp = t;
+         if (t > max_temp) max_temp = t;
+     }
+
+     g_min_temp = min_temp;
+     g_max_temp = max_temp;
+     g_avg_temp = (int8_t)(sum / THERM_COUNT);
+ }
+
+ void send_all_temps_CAN(int8_t temp_array[THERM_COUNT])
+ {
+     // Sends all 40 thermistor temps as 5 CAN frames of 8 bytes each.
+     // CAN IDs: 0x1839F381 (temps 0-7), 0x1839F382 (8-15), ..., 0x1839F385 (32-39)
+     txHeader.IDE = CAN_ID_EXT;
+     txHeader.RTR = CAN_RTR_DATA;
+     txHeader.DLC = 8;
+
+     for (uint8_t frame = 0; frame < 5; frame++) {
+         uint32_t deadline = HAL_GetTick() + 10;
+         while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0) {
+             if (HAL_GetTick() > deadline) break;
+         }
+         txHeader.ExtId = 0x1839F381 + frame;
+         uint8_t data[8];
+         for (uint8_t b = 0; b < 8; b++) {
+             data[b] = (uint8_t)temp_array[frame * 8 + b];
+         }
+         HAL_CAN_AddTxMessage(&hcan, &txHeader, data, &txMailbox);
+     }
  }
 
 /* USER CODE END 4 */
