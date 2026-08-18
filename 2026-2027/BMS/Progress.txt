@@ -1,0 +1,6 @@
+Issues:
+ - Breakout pins are 2.00mm. Need to make 2.00mm to 2.54mm adapter to flash.
+
+Todo:
+ - Design, manufacture, & validate complete test harnessing
+ - Place PO
