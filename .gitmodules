@@ -1,0 +1,3 @@
+[submodule "2026-2027/bms_untested"]
+	path = 2026-2027/bms_untested
+	url = https://github.com/SCFormulaElectric/bms.git
