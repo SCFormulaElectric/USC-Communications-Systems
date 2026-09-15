@@ -1,3 +1,9 @@
 [submodule "2026-2027/bms_untested"]
 	path = 2026-2027/bms_untested
 	url = https://github.com/SCFormulaElectric/bms.git
+[submodule "2026-2027/vcu-console"]
+	path = 2026-2027/vcu-console
+	url = https://github.com/SCFormulaElectric/vcu-console.git
+[submodule "2026-2027/boilerplate_vcu"]
+	path = 2026-2027/boilerplate_vcu
+	url = https://github.com/SCFormulaElectric/vcu_stm32.git
