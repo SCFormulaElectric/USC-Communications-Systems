@@ -1,0 +1,20 @@
+DBC file guide for standard Cascadia Motion (CM) family inverters such as CM200 CM350 and variants of them.
+
+Cascadia Motion motors or other motors that are water-cooled or air-cooled (NOT oil-cooled internally).
+	Use file XXXXXXXX_CM_not_oil-cooled_CAN_DB.dbc 
+
+
+Cascadia Motion motors that are internally oil-cooled and CAN offset is not needed.
+	Use file XXXXXXXX_CM_oil-cooled_CAN_DB.dbc Unless:
+
+Cascadia Motion motors that are internally oil-cooled and CAN offset is needed, use one that best suits your application:
+	XXXXXXXX_CM_oil-cooled_J1939_offset_0x00_CAN_DB.dbc
+	or
+	XXXXXXXX_CM_oil-cooled_J1939_offset_0xA0_CAN_DB.dbc
+
+
+---------------------------------------------
+DBC file guide for RMS and Cascadia Motion (PM and RM) family inverters such as PM100, PM150, PM250 and variants of them...
+	Use file XXXXXXXX_PM_and_RM_CAN_DB.dbc
+----------------------------------------------
+

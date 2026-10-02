@@ -1,0 +1,7 @@
+{
+  "_readme": "Fill in bit names from the Cascadia/RMS inverter manual (fault code table). Keys are bit numbers 0-15 as strings. INV_Diag_Run_Faults_* fall back to the INV_Run_Fault_* tables. Example: \"INV_Post_Fault_Lo\": {\"0\": \"<fault name from manual>\"}",
+  "INV_Post_Fault_Lo": {},
+  "INV_Post_Fault_Hi": {},
+  "INV_Run_Fault_Lo": {},
+  "INV_Run_Fault_Hi": {}
+}
