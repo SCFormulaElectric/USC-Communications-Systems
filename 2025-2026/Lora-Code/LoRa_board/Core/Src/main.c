@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body (non-blocking LoRa AT config + CAN/LoRa loop)
   ******************************************************************************
   * @attention
   *
@@ -21,17 +21,44 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h" // Required for memset()
+#include <string.h>   // memcpy
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+// One AT command + how long to wait AFTER the module replies before sending the next one
+typedef struct {
+    const uint8_t *cmd;
+    uint16_t       len;
+    uint32_t       settle_ms;
+} at_step_t;
+
+// Where the AT configuration currently is
+typedef enum {
+    CFG_SEND,        // send the current command
+    CFG_WAIT_REPLY,  // waiting for the module to answer (with a timeout)
+    CFG_SETTLE,      // got a reply, waiting the short settle time
+    CFG_DONE,        // all commands sent successfully
+    CFG_FAILED       // module never answered after retries
+} cfg_state_t;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RX_BUFFER_SIZE 128
+#define MAX_MESSAGE_LENGTH    20     // longest line we accept from the LoRa module
+#define AT_REPLY_TIMEOUT_MS   300    // give up waiting for a reply after this long...
+#define AT_MAX_RETRIES        3      // ...and resend the command up to this many times
+#define AT_SETTLE_MS          20     // normal wait after a reply (the 10-20 ms you mentioned)
+#define AT_RESET_SETTLE_MS    1000   // module reboots after AT+RESET; give it longer
+#define LORA_TX_PERIOD_MS     500    // heartbeat message interval
+#define FAIL_BLINK_MS         100    // fast LED blink if config failed
+
+// LoRa fixed-point header: target address 0x0A01, channel 0x03
+#define LORA_ADDR_H           0x0A
+#define LORA_ADDR_L           0x01
+#define LORA_CHANNEL          0x03
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,171 +73,68 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-// --- UART Interrupt Variables ---
-uint8_t FinalData[20];   // max amount of rx data before processing
-uint8_t RxData[20];      // storing rx data
-uint8_t temp[100];
-volatile int indx = 0;            // counting bytes
-volatile int message_received_flag = 0;    // marks message completion
-int MAX_MESSAGE_LENGTH = 20;
+// ---------- UART receive (filled by the interrupt) ----------
+static uint8_t rx_byte;                         // each interrupt drops one byte here
+static uint8_t RxData[MAX_MESSAGE_LENGTH];      // the line the ISR is currently building
+static uint8_t indx = 0;                        // only touched inside the ISR
 
-// --- CAN Interrupt Variables --
-volatile int CAN_received = 0;   // marks when to send CAN via UART
-uint8_t CAN_rx_data[8];   // Global buffer for received CAN data
-uint8_t CAN_rx_len = 8;
-CAN_TxHeaderTypeDef pHeader; //declare a specific header for message transmittions
-CAN_RxHeaderTypeDef pRxHeader; //declare header for message reception
-CAN_FilterTypeDef sFilterConfig; //declare CAN filter structure
+// A finished line, handed from the ISR to main.
+// Rule: the ISR only writes FinalData when line_ready == 0,
+//       main only reads FinalData when line_ready == 1.
+static uint8_t          FinalData[MAX_MESSAGE_LENGTH];
+static volatile uint8_t final_len  = 0;
+static volatile uint8_t line_ready = 0;
 
-void send_at_command(const uint8_t* hex_cmd, uint16_t len);
-void send_command_and_wait(const uint8_t* cmd, uint16_t len);
+// ---------- CAN receive (filled by the interrupt) ----------
+static uint8_t          CAN_rx_data[8];
+static volatile uint8_t CAN_rx_len   = 0;
+static volatile uint8_t CAN_received = 0;
+static CAN_FilterTypeDef sFilterConfig;
 
-void toggle_LED() {
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	HAL_Delay(100);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-}
+// ---------- AT commands (static const so they stay valid during interrupt-driven TX) ----------
+static const uint8_t cmd_enter_config[] = "+++\r\n";
+static const uint8_t cmd_mode1[]        = "AT+MODE1\r\n";
+static const uint8_t cmd_level7[]       = "AT+LEVEL7\r\n";
+static const uint8_t cmd_channel03[]    = "AT+CHANNEL03\r\n";
+static const uint8_t cmd_mac0a02[]      = "AT+MAC0a,02\r\n";
+static const uint8_t cmd_powe22[]       = "AT+POWE22\r\n";
+static const uint8_t cmd_sf12[]         = "AT+SF12\r\n";
+static const uint8_t cmd_reset[]        = "AT+RESET\r\n";
 
-void AT_Config(void) {
-	 // AT configuration
+// sizeof() of a string literal counts the hidden '\0' at the end, so subtract 1
+#define AT_STEP(c, ms) { (c), (uint16_t)(sizeof(c) - 1), (ms) }
 
-	  HAL_UART_Receive_IT(&huart2, temp, 1);   // interrupt initialization
+static const at_step_t at_steps[] = {
+    AT_STEP(cmd_enter_config, AT_SETTLE_MS),
+    AT_STEP(cmd_mode1,        AT_SETTLE_MS),
+    AT_STEP(cmd_level7,       AT_SETTLE_MS),
+    AT_STEP(cmd_channel03,    AT_SETTLE_MS),
+    AT_STEP(cmd_mac0a02,      AT_SETTLE_MS),
+    AT_STEP(cmd_powe22,       AT_SETTLE_MS),
+    AT_STEP(cmd_sf12,         AT_SETTLE_MS),
+    AT_STEP(cmd_reset,        AT_RESET_SETTLE_MS),
+    // These two "+++" were at the end of the original sequence.
+    // Kept so behavior matches; check the module datasheet to see if they're needed.
+    AT_STEP(cmd_enter_config, AT_SETTLE_MS),
+    AT_STEP(cmd_enter_config, AT_SETTLE_MS),
+};
+#define N_AT_STEPS (sizeof(at_steps) / sizeof(at_steps[0]))
 
-	  // +++ to AT mode
-	  uint8_t cmd_enter_config[] = {0x2B, 0x2B, 0x2B, 0x0d, 0x0a};
+// ---------- AT config state machine "bookmark" ----------
+static cfg_state_t cfg_state   = CFG_SEND;
+static uint8_t     cfg_idx     = 0;   // which command we're on
+static uint8_t     cfg_retries = 0;
+static uint32_t    cfg_t0      = 0;   // timestamp of the last state change
 
-	  // AT+MODE0\r\n
-	  uint8_t cmd_mode1[] = {0x41, 0x54, 0x2B, 0x4D, 0x4F, 0x44, 0x45, 0x31, 0x0D, 0x0A};
-
-	  // AT+LEVEL7\r\n
-	  uint8_t cmd_level7[] = {0x41, 0x54, 0x2B, 0x4C, 0x45, 0x56, 0x45, 0x4C, 0x37, 0x0D, 0x0A};
-
-	  // AT+CHANNEL03\r\n
-	  uint8_t cmd_channel03[] = {0x41, 0x54, 0x2B, 0x43, 0x48, 0x41, 0x4E, 0x4E, 0x45, 0x4C, 0x30, 0x33, 0x0D, 0x0A};
-
-	  // AT+MAC0a,02\r\n
-	  uint8_t cmd_mac0a02[] = {0x41, 0x54, 0x2B, 0x4D, 0x41, 0x43, 0x30, 0x61, 0x2C, 0x30, 0x32, 0x0D, 0x0A};
-	  uint8_t cmd_sf12[] = {0x41, 0x54, 0x2B, 0x53, 0x46, 0x31, 0x32, 0x0D, 0x0A};
-
-	  // AT+POWE22\r\n
-	  uint8_t cmd_powe22[] = {0x41, 0x54, 0x2B, 0x50, 0x4F, 0x57, 0x45, 0x32, 0x32, 0x0D, 0x0A};
-
-	    // AT+RESET\r\n
-	    uint8_t cmd_reset[] = {0x41, 0x54, 0x2B, 0x52, 0x45, 0x53, 0x45, 0x54, 0x0D, 0x0A};
-
-		// should receive "Entry AT\r\n" or something
-		// HAL_Delay(6000); // A small delay is often good practice after commands
-	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
-		// Set transmission mode
-	  send_command_and_wait(cmd_mode1, sizeof(cmd_mode1));
-		// HAL_Delay(6000);
-	  // Set air data rate level
-	  send_command_and_wait(cmd_level7, sizeof(cmd_level7));
-	  // Set frequency channel
-	  send_command_and_wait(cmd_channel03, sizeof(cmd_channel03));
-	  // Set device address
-	  send_command_and_wait(cmd_mac0a02, sizeof(cmd_mac0a02));
-	  // Set TX power
-	  send_command_and_wait(cmd_powe22, sizeof(cmd_powe22));
-	  //send SF
-	  send_command_and_wait(cmd_sf12, sizeof(cmd_sf12));
-	  // check AT for OK
-	  // Reset the module to apply settings
-	  send_command_and_wait(cmd_reset, sizeof(cmd_reset));
-	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
-	  send_command_and_wait(cmd_enter_config, sizeof(cmd_enter_config));
-
-
-}
-
-void CAN_Config(void) {
-	// CAN Initialization
-
-	  uint8_t bigData[20] = { /* ... */ };
-	  uint8_t chunk[8];
-
-	  CAN_TxHeaderTypeDef txHeader;
-		  // uint8_t txData[20];
-		  uint32_t txMailbox;
-
-		  txHeader.StdId = 0x123;
-		  txHeader.RTR = CAN_RTR_DATA;
-		  txHeader.IDE = CAN_ID_STD;
-		  txHeader.DLC = 2;			// sending 16
-		  txHeader.TransmitGlobalTime = DISABLE;
-
-		// https://github.com/timsonater/stm32-CAN-bus-example-HAL-API/blob/master/main.c
-
-		pHeader.DLC=1; //give message size of 1 byte
-		pHeader.IDE=CAN_ID_STD; //set identifier to standard
-		pHeader.RTR=CAN_RTR_DATA; //set data type to remote transmission request?
-		pHeader.StdId=0x244; //define a standard identifier, used for message identification by filters (switch this for the other microcontroller)
-
-		//filter one (stack light blink)
-		sFilterConfig.FilterFIFOAssignment=CAN_FILTER_FIFO0; //set fifo assignment
-		sFilterConfig.FilterIdHigh=0x245<<5; //the ID that the filter looks for (switch this for the other microcontroller)
-		sFilterConfig.FilterIdLow=0;
-		sFilterConfig.FilterMaskIdHigh=0;
-		sFilterConfig.FilterMaskIdLow=0;
-		sFilterConfig.FilterScale=CAN_FILTERSCALE_32BIT; //set filter scale
-		sFilterConfig.FilterActivation=ENABLE;
-
-		HAL_CAN_ConfigFilter(&hcan, &sFilterConfig); //configure CAN filter
-
-	  if (HAL_CAN_Start(&hcan) != HAL_OK)
-	  {
-	    Error_Handler();
-	  }
-	  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); //enable interrupts
-
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-
-		uint8_t received_byte = temp[0];
-
-		// if ends with \n, then message complete
-		if (received_byte == 0x0a) {
-			message_received_flag = 1;
-		}
-		// if not complete message or not max length, store it
-		if (indx < (MAX_MESSAGE_LENGTH - 1) && message_received_flag == 0) { // Leave 1 byte for null terminator
-			RxData[indx] = received_byte;
-			indx++;
-		}
-		else if (indx >= (MAX_MESSAGE_LENGTH - 1)) {
-			// Buffer overflow occurred before newline, treat as error/reset
-			indx = 0;
-		}
-
-		// Restart the interrupt
-		HAL_UART_Receive_IT(&huart2, temp, 1);
-
-}
-
-
-// Called automatically when a new frame lands in FIFO0
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-	CAN_RxHeaderTypeDef rxHeader;
-
-	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, CAN_rx_data) != HAL_OK) {
-		Error_Handler(); // error handling
-	}
-
-	// Example: check ID, length, print/process
-	if (rxHeader.IDE == CAN_ID_STD) {
-		CAN_rx_len = rxHeader.DLC;
-		CAN_received = 1;
-	}
-
-	else {
-		uint32_t id = rxHeader.ExtId;     // 29-bit
-		// TODO: handle extended ID
-	}
-
-
-}
+// ---------- LoRa transmit ----------
+// Heartbeat: header + "selena" + \r\n
+static const uint8_t lora_heartbeat[] = {
+    LORA_ADDR_H, LORA_ADDR_L, LORA_CHANNEL,
+    's', 'e', 'l', 'e', 'n', 'a',
+    '\r', '\n'
+};
+// Buffer for forwarding CAN frames. Must NOT be changed while a transmit is in progress.
+static uint8_t lora_tx_buf[3 + 1 + 8 + 2];   // header + length byte + up to 8 data + \r\n
 
 /* USER CODE END PV */
 
@@ -220,10 +144,113 @@ static void MX_GPIO_Init(void);
 static void MX_CAN_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+static void CAN_Config(void);
+static void AT_Config_Step(void);
+static uint8_t uart_tx_ready(void);
+static void handle_lora_line(const uint8_t *data, uint8_t len);
+static void lora_forward_can(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// True when the UART has finished sending and can take new bytes
+static uint8_t uart_tx_ready(void)
+{
+    return (huart2.gState == HAL_UART_STATE_READY);
+}
+
+/*
+ * AT configuration, one small step per call. It NEVER waits.
+ * Each call checks "is there something to do right now?" and returns immediately.
+ */
+static void AT_Config_Step(void)
+{
+    uint32_t now = HAL_GetTick();
+
+    switch (cfg_state)
+    {
+    case CFG_SEND:
+        if (!uart_tx_ready()) {
+            break;                       // UART still busy; try again next loop pass
+        }
+        line_ready = 0;                  // throw away any old/stale reply
+        if (HAL_UART_Transmit_IT(&huart2,
+                                 (uint8_t *)at_steps[cfg_idx].cmd,
+                                 at_steps[cfg_idx].len) == HAL_OK)
+        {
+            cfg_t0    = now;             // start the reply timeout clock
+            cfg_state = CFG_WAIT_REPLY;
+        }
+        break;
+
+    case CFG_WAIT_REPLY:
+        if (line_ready) {
+            // Optional: check FinalData for "OK" here before accepting
+            line_ready = 0;
+            cfg_t0     = now;            // start the settle clock
+            cfg_state  = CFG_SETTLE;
+        }
+        else if (now - cfg_t0 > AT_REPLY_TIMEOUT_MS) {
+            cfg_retries++;
+            cfg_state = (cfg_retries > AT_MAX_RETRIES) ? CFG_FAILED : CFG_SEND;
+        }
+        break;
+
+    case CFG_SETTLE:
+        if (now - cfg_t0 >= at_steps[cfg_idx].settle_ms) {
+            cfg_retries = 0;
+            cfg_idx++;
+            cfg_state = (cfg_idx >= N_AT_STEPS) ? CFG_DONE : CFG_SEND;
+        }
+        break;
+
+    case CFG_DONE:
+    case CFG_FAILED:
+    default:
+        break;
+    }
+}
+
+/*
+ * Called from main whenever a full line arrives from the LoRa module
+ * after configuration is done (i.e. incoming telemetry / messages).
+ */
+static void handle_lora_line(const uint8_t *data, uint8_t len)
+{
+    (void)data;
+    (void)len;
+    // TODO: parse incoming LoRa data here
+}
+
+/*
+ * Copy the latest CAN frame and send it over LoRa.
+ * Only call when uart_tx_ready() is true, so lora_tx_buf isn't still being sent.
+ */
+static void lora_forward_can(void)
+{
+    uint8_t data[8];
+    uint8_t len;
+
+    // Briefly block interrupts so the CAN ISR can't overwrite the data mid-copy
+    __disable_irq();
+    len = CAN_rx_len;
+    memcpy(data, CAN_rx_data, len);
+    CAN_received = 0;
+    __enable_irq();
+
+    uint8_t i = 0;
+    lora_tx_buf[i++] = LORA_ADDR_H;
+    lora_tx_buf[i++] = LORA_ADDR_L;
+    lora_tx_buf[i++] = LORA_CHANNEL;
+    lora_tx_buf[i++] = len;              // tells the receiver how many data bytes follow
+    memcpy(&lora_tx_buf[i], data, len);
+    i += len;
+    lora_tx_buf[i++] = '\r';
+    lora_tx_buf[i++] = '\n';
+
+    HAL_UART_Transmit_IT(&huart2, lora_tx_buf, i);
+}
 
 /* USER CODE END 0 */
 
@@ -260,13 +287,14 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  AT_Config();
+  // Start listening on the UART: the ISR will fire for each byte from now on
+  HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
 
-  // --- START THE FIRST UART RECEPTION WITH INTERRUPT ---
-  // This tells the UART hardware to start listening for the very first byte.
-  // The interrupt callback will handle receiving all subsequent bytes.
-  //HAL_UART_Receive_IT(&huart2, &rx_char, 1);
-  //uint8_t rx_buffer_main[RX_BUFFER_SIZE];
+  // Start CAN (this was never called in the original)
+  CAN_Config();
+
+  uint32_t last_heartbeat = 0;
+  uint32_t last_fail_blink = 0;
 
   /* USER CODE END 2 */
 
@@ -277,30 +305,46 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    uint32_t now = HAL_GetTick();
 
-	  	if (message_received_flag)
-	  	{
-	  		// indx holds the number of bytes received (up to, but not including, the '\n')
-	  		memcpy(FinalData, RxData, indx);
+    // ---- Task 1: AT configuration (until done or failed) ----
+    if (cfg_state != CFG_DONE && cfg_state != CFG_FAILED) {
+        AT_Config_Step();
+    }
 
-	  		// Toggle the LED to signal received
-	  		//toggle_LED();
+    // ---- Task 2: normal operation once configured ----
+    else if (cfg_state == CFG_DONE) {
 
-	  		// clear the flag and reset index
-	  		message_received_flag = 0;
-	  		indx = 0;
-	  	}
+        // Incoming LoRa data
+        if (line_ready) {
+            handle_lora_line(FinalData, final_len);
+            line_ready = 0;
+        }
 
+        // Outgoing: CAN data has priority over the heartbeat
+        if (uart_tx_ready()) {
+            if (CAN_received) {
+                lora_forward_can();
+            }
+            else if (now - last_heartbeat >= LORA_TX_PERIOD_MS) {
+                if (HAL_UART_Transmit_IT(&huart2, (uint8_t *)lora_heartbeat,
+                                         sizeof(lora_heartbeat)) == HAL_OK) {
+                    last_heartbeat = now;
+                    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+                }
+            }
+        }
+    }
 
-	// 1. Transmit the UART message.
-	// address 0a01, channel 3, "selena"
-	uint8_t lora_message[] = {0x0A, 0x01, 0x03, 0x73, 0x65, 0x6C, 0x65, 0x6E, 0x61, 0x0D, 0x0A};
-	send_at_command(lora_message, sizeof(lora_message));
-	HAL_Delay(500);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	message_received_flag = 0;
-	indx = 0;
+    // ---- Task 3: config failed -> fast blink so you can see it ----
+    else {
+        if (now - last_fail_blink >= FAIL_BLINK_MS) {
+            last_fail_blink = now;
+            HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        }
+    }
 
+    // Add more tasks here, written the same way: check, act if needed, never wait.
   }
   /* USER CODE END 3 */
 }
@@ -447,25 +491,92 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 /**
-  * @brief  Reception Complete Callback.
-  * This function is automatically called by the HAL driver every time
-  * a single byte is received via interrupt.
-  * @param  huart: UART handle
-  * @retval None
+  * @brief  Set up the CAN filter and start CAN with RX interrupts.
   */
+static void CAN_Config(void)
+{
+    sFilterConfig.FilterBank           = 0;
+    sFilterConfig.FilterMode           = CAN_FILTERMODE_IDMASK;
+    sFilterConfig.FilterScale          = CAN_FILTERSCALE_32BIT;
+    sFilterConfig.FilterIdHigh         = 0x245 << 5;  // ID we're "looking for"
+    sFilterConfig.FilterIdLow          = 0;
+    sFilterConfig.FilterMaskIdHigh     = 0;           // mask 0 = don't compare any bits,
+    sFilterConfig.FilterMaskIdLow      = 0;           // so this currently accepts ALL IDs
+    sFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+    sFilterConfig.FilterActivation     = ENABLE;
+    sFilterConfig.SlaveStartFilterBank = 14;          // ignored on single-CAN parts
 
-
-void send_at_command(const uint8_t* hex_cmd, uint16_t len) {
-    // Buffer to hold the command plus the required "\r\n"
-	HAL_UART_Transmit(&huart2, (uint8_t*)hex_cmd, len, 100);
+    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_CAN_Start(&hcan) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
-void send_command_and_wait(const uint8_t* cmd, uint16_t len) {
-	HAL_UART_Transmit(&huart2, (uint8_t*)cmd, len, 100);
-    while (message_received_flag == 0) {}
-    message_received_flag = 0;
-    indx = 0;
+/**
+  * @brief  UART receive interrupt: runs once per received byte.
+  *         Builds a line in RxData; on '\n' hands the finished line to main.
+  */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        uint8_t b = rx_byte;
+
+        if (b == '\n') {
+            if (!line_ready) {               // main has consumed the previous line
+                memcpy(FinalData, RxData, indx);
+                final_len  = indx;
+                line_ready = 1;              // "mailbox flag up"
+            }
+            // if main hasn't consumed the last line yet, this one is dropped
+            indx = 0;
+        }
+        else if (indx < MAX_MESSAGE_LENGTH) {
+            RxData[indx++] = b;
+        }
+        else {
+            indx = 0;                        // line too long: discard and resync
+        }
+
+        HAL_UART_Receive_IT(&huart2, &rx_byte, 1);   // re-arm for the next byte
+    }
+}
+
+/**
+  * @brief  If a UART error (e.g. overrun) happens, HAL stops receiving.
+  *         Re-arm so we keep listening.
+  */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2) {
+        indx = 0;
+        HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    }
+}
+
+/**
+  * @brief  CAN receive interrupt: a new frame landed in FIFO0.
+  */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan_ptr)
+{
+    CAN_RxHeaderTypeDef rxHeader;
+
+    if (HAL_CAN_GetRxMessage(hcan_ptr, CAN_RX_FIFO0, &rxHeader, CAN_rx_data) != HAL_OK) {
+        Error_Handler();
+    }
+
+    if (rxHeader.IDE == CAN_ID_STD) {
+        CAN_rx_len   = (uint8_t)rxHeader.DLC;
+        CAN_received = 1;                    // newest frame overwrites an unsent older one
+    }
+    // Extended (29-bit) IDs are ignored for now
 }
 
 /* USER CODE END 4 */
