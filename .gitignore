@@ -69,6 +69,10 @@ fp-info-cache
 2025-26/Boards/temp_gerbers/
 2026-27/Boards/temp_gerbers/
 
+# STM32CubeIDE build output
+**/Debug/
+**/Release/
+
 # Icon must end with two \r
 Icon
 

@@ -1,0 +1,13 @@
+
+- MOLEX 530470210 [Power connector to banana cable] [https://www.digikey.com/en/products/detail/molex/0530470210/242853?s=N4IgTCBcDaILIHkAyBRAGgAgKwGYAMALAOx5gCMeIAugL5A]
+- 2mm header 2 pos [uart] 
+- 2mm header 3 pos [prog]
+- 2mm header 1 pos [GLV]
+- 2mm jumper to 2.54mm 
+- MOLEX 530470210 [CAN H & CAN L] [https://www.digikey.com/en/products/detail/molex/0530470210/242853?s=N4IgTCBcDaILIHkAyBRAGgAgKwGYAMALAOx5gCMeIAugL5A]
+- MOLEX 530471010 [10 pos GPIO] [https://www.digikey.com/en/products/detail/molex/0530471010/242861?s=N4IgTCBcDaILIHkAyBRAGgAgKwGYAMALAOwCMeZIAugL5A]
+- MOLEX 530470210 [COMH & COML] [https://www.digikey.com/en/products/detail/molex/0530470210/242853?s=N4IgTCBcDaILIHkAyBRAGgAgKwGYAMALAOx5gCMeIAugL5A]
+- MOLEX 530470610 [Temp Sensors] https://www.digikey.com/en/products/detail/molex/0530470610/242857?s=N4IgTCBcDaILIHkAyBRAGgAgKwGYAMALAOx4BsAjHiALoC%2BQA]
+- 2x8p Connector [Cell taps] [https://www.lcsc.com/product-detail/C5355564.html?s_z=n_q_C5355564&globalKeyword=C5355564]
+
+MATCHING CRIMPS & CONNECTORS FOR ALL
