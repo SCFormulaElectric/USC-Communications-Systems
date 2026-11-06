@@ -18,7 +18,7 @@ brief, so it isn't applied.
 | Generated header (committed) | `LoRa_board/Core/Inc/telemetry_schema.h`: packed structs, 121 `_Static_assert`s on every size and offset, `#define`s for types, codes, bits, timeouts and blocked registers |
 | Firmware logic, no HAL | `LoRa_board/Core/Src/telem_core.c` (CAN decoding, valid/status bits, events, packet and batch building, CRC, LoRa receive parser) and `diag_core.c` (command validation, safety rules, session, repeating reads, captures, DIAG_RESP) |
 | Firmware glue | `main.c` (CubeMX layout, loop), `board.c` (CAN ring, USART2 + DMA, IWDG), `telem_config.h` (build flags) |
-| PC tools | `telemetry/pc/`: `lora_link.py`, `decoder.py`, `logger.py`, `replay.py`, `telemetry_cli.py`, `read_loop.py`, `README.md`, `requirements.txt` |
+| PC tools | `telemetry/pc/`: `lora_link.py`, `decoder.py`, `logger.py`, `replay.py`, `telemetry_cli.py`, `telemetry_gui.py` (Tkinter viewer: changed values flash red for 0.5 s; `--demo` uses `sim_port.py`), `read_loop.py`, `README.md`, `requirements.txt` |
 | Tests | `telemetry/tests/host/` (C runner, cross-check writer, generated filler), `telemetry/tests/*.py` (pytest) |
 | Command-line build + size report | `telemetry/tools/build_fw.py` |
 | Bench test | `telemetry/BENCH_TEST.md` |

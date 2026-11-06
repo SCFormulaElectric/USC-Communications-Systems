@@ -30,6 +30,25 @@ OK       15.0 pkt/s loss  0.0% |   6000 rpm | tq  12.3% | pack V 3456 I 120 SOC 
 - Link state is `OK`, `no data` (nothing for 2 s), or `PC radio restarting, commands paused`.
   In the last case the PC module has locked up; commands resume on its `Power on`, or after 90 s.
 
+### GUI
+
+```
+py telemetry_gui.py                 # pick the port in the window
+py telemetry_gui.py --port COM8     # connect straight away
+py telemetry_gui.py --demo          # simulated car (sim_port.py): try it without hardware
+```
+
+- **Telemetry tab:** FAST, THERM and DIAG tables with every field: value, raw, unit, and age
+  (seconds since the last update). The `valid`, `status` and `build_opts` bits each get a row.
+- **Values stay until a new one arrives.** A row turns **red when its value changes**, and returns
+  to normal after 0.5 s. Tick *Highlight every update* to highlight on every packet instead.
+  Rows not updated for 3 s turn grey.
+- **Events tab:** every event, newest first; new ones are highlighted the same way.
+- **Diagnostics tab:** the same commands as the CLI (below), with results and Bamocar replies.
+- **Status bar:** link state, packets/s, loss, received/missing, bad CRC, session.
+- It logs exactly like the CLI (raw `.bin` plus CSVs). Only one program can have the port open,
+  so close the CLI first.
+
 ### Diagnostics commands (Diag build on the car)
 
 | Command | What it does |
@@ -87,6 +106,8 @@ py replay.py logs/raw_20261105_201500.bin
 - `logger.py`: raw log and CSV logging
 - `replay.py`: rebuilds the CSVs from a raw log
 - `telemetry_cli.py`: the console
+- `telemetry_gui.py`: the Tkinter viewer and diagnostics console
+- `sim_port.py`: a simulated car on a fake serial port (`--demo`, tests)
 - `read_loop.py`: bench test 2 helper (a read every N s for M minutes, with a summary)
 
 ## Tests
