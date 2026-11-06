@@ -3,12 +3,13 @@
  *
  * Flash this, let it run (~10-40 s), then flash the telemetry firmware again.
  *
- *  1. Finds the module's UART baud rate: '+++' at 9600, 115200, 57600, 38400, 19200, 4800, 2400,
- *     1200 (up to 3 passes). '+++' toggles AT/data mode, so "Exit AT" means it was already in
+ *  1. Finds the module's UART baud rate: '+++' at 115200, then 9600, 115200, 57600, 38400, 19200,
+ *     4800, 2400, 1200 (up to 3 passes, 2.5 s apart so an SF12 module has finished sending). '+++' toggles AT/data mode, so "Exit AT" means it was already in
  *     AT mode and is toggled back.
  *  2. Saves AT+HELP (the old settings) in g_before.
- *  3. Sets MODE1, LEVEL7 (SF5), CHANNEL03, MAC 0a,02, POWE22 and baud 115200 (AT+BAUD8, takes
- *     effect at the reset). NEVER sends AT+SF12. Then AT+RESET.
+ *  3. Sets MODE1, LEVEL6 then LEVEL7 (re-derives SF5: AT+LEVEL7 alone leaves an old SF12 when the
+ *     level is already 7), AT+SF5 if SF still isn't 5, CHANNEL03, MAC 0a,02, POWE22 and baud
+ *     115200 (AT+BAUD8, takes effect at the reset). NEVER sends AT+SF12. Then AT+RESET.
  *  4. Checks the new settings at 115200 (g_after), leaves AT mode.
  *  5. LED on PA5:  short flash per baud tried = working
  *                  steady ON       = done, module set up (g_result 1)
@@ -171,18 +172,26 @@ static int leave_at(void)
     return 0;
 }
 
-/* Baud rate the module answers '+++' at (left in AT mode), or 0. */
-static uint32_t find_module(void)
+static int try_baud(uint32_t baud)
 {
+    led(1);
+    uart_init(baud);
+    delay_ms(30);
+    led(0);
+    g_attempts++;
+    return enter_at();
+}
+
+/* Baud rate the module answers '+++' at (left in AT mode), or 0. Tries `first` before the list.
+ * A '+++' at the wrong rate reaches the module as garbage data, which it may transmit; at SF12
+ * that takes seconds, and it ignores '+++' meanwhile. So wait 2.5 s after each failed try. */
+static uint32_t find_module(uint32_t first)
+{
+    if (first && try_baud(first)) return first;
     for (int pass = 0; pass < 3; pass++) {
         for (unsigned i = 0; i < sizeof k_bauds / sizeof k_bauds[0]; i++) {
-            led(1);
-            uart_init(k_bauds[i]);
-            delay_ms(30);
-            led(0);
-            g_attempts++;
-            if (enter_at()) return k_bauds[i];
-            delay_ms(400);                   /* let any garbage from a wrong baud time out */
+            delay_ms(2500);
+            if (try_baud(k_bauds[i])) return k_bauds[i];
         }
     }
     return 0;
@@ -236,28 +245,33 @@ static void radio_send(const char *text)
 }
 
 /* ------------------------------------------------------------------ main */
-static uint32_t run_setup(void)
+static uint32_t run_setup(uint32_t first)
 {
-    uint32_t baud = find_module();
+    uint32_t baud = find_module(first);
     if (!baud) return 2;
-    g_found_baud = baud;
+    if (!g_found_baud) g_found_baud = baud;
 
     at("AT+HELP", 3000);
     if (!g_before[0]) memcpy(g_before, rx, sizeof g_before);
 
     cmd_ok("AT+MODE1");
-    cmd_ok("AT+LEVEL7");                  /* LEVEL 7 = SF5; resets an earlier AT+SF12 */
+    /* AT+LEVEL7 alone doesn't reset an earlier AT+SF12 when the level is already 7 (seen on this
+     * board): change the level and back, so the module re-derives SF5 from LEVEL 7. */
+    cmd_ok("AT+LEVEL6");
+    cmd_ok("AT+LEVEL7");
     cmd_ok("AT+CHANNEL03");
     cmd_ok("AT+MAC0a,02");
     cmd_ok("AT+POWE22");
+    at("AT+HELP", 3000);
+    if (!has("Spreading Factor:5")) cmd_ok("AT+SF5");   /* LEVEL 7's own SF; never SF12 */
     if (baud != 115200) cmd_ok("AT+BAUD8");   /* 115200, applied at the reset */
     at("AT+RESET", 1500);
-    delay_ms(2500);                       /* reboot: prints "Power on" ~0.5 s later */
+    delay_ms(3000);                       /* reboot: prints "Power on" ~0.5 s later */
 
     uart_init(115200);
     delay_ms(50);
     if (!enter_at()) {
-        uint32_t b = find_module();       /* not at 115200: find out where it went */
+        uint32_t b = find_module(115200); /* not at 115200: find out where it went */
         if (!b) return 2;
         at("AT+HELP", 3000);
         memcpy(g_after, rx, sizeof g_after);
@@ -283,8 +297,10 @@ int main(void)
     SysTick_Config(F_CPU / 1000u);
 
     delay_ms(1500);                       /* the module boots with the board */
-    for (int attempt = 0; attempt < 2 && g_result != 1; attempt++)
-        g_result = run_setup();
+    for (int attempt = 0; attempt < 3 && g_result != 1; attempt++) {
+        g_result = run_setup(115200u);    /* 115200 first (the target rate), then the list */
+        if (g_result != 1) delay_ms(3000);
+    }
 
     if (g_result == 1) {
         summary(g_report[0], sizeof g_report[0], "LORA MODULE SETUP OK. BEFORE:", g_before, g_found_baud);

@@ -10,19 +10,22 @@ Flash it once, let it set the module up, then flash the telemetry firmware again
 
 ## What it does
 
-1. **Finds the baud rate.** Sends `+++` at 9600, 115200, 57600, 38400, 19200, 4800, 2400 and
-   1200, up to 3 passes. `+++` toggles AT/data mode, so a module already in AT mode is handled.
+1. **Finds the baud rate.** Sends `+++` at 115200, then 9600, 115200, 57600, 38400, 19200, 4800,
+   2400 and 1200, up to 3 passes. Tries are 2.5 s apart, because a `+++` at the wrong rate reaches
+   the module as data, and at SF12 sending it takes seconds. `+++` toggles AT/data mode, so a module already in AT mode is handled.
 2. **Saves the old settings.** `AT+HELP` goes to `g_before`.
-3. **Writes the new settings.** `AT+MODE1`, `AT+LEVEL7` (sets SF5), `AT+CHANNEL03`,
-   `AT+MAC0a,02`, `AT+POWE22`, and `AT+BAUD8` (115200) if needed, then `AT+RESET`.
+3. **Writes the new settings.** `AT+MODE1`, then `AT+LEVEL6` and `AT+LEVEL7`. On this board
+   `AT+LEVEL7` alone left the old SF12 in place, because the level was already 7; changing the
+   level makes the module re-derive SF5. Then `AT+SF5` if SF still isn't 5, `AT+CHANNEL03`,
+   `AT+MAC0a,02`, `AT+POWE22`, `AT+BAUD8` (115200) if needed, and `AT+RESET`.
    **It never sends `AT+SF12`.**
-4. **Checks the result** at 115200 (`AT+HELP` and `AT+BAUD`), leaves AT mode, and tries the
-   whole sequence once more if the check fails.
+4. **Checks the result** at 115200 (`AT+HELP` and `AT+BAUD`), leaves AT mode, and repeats the
+   whole sequence (up to 3 times) if the check fails.
 5. **Reports:**
 
    | LED (PA5) | Meaning |
    |---|---|
-   | short flash about every 1–1.5 s | working: one flash per baud rate tried (up to ~40 s) |
+   | short flash every few seconds | working: one flash per baud rate tried (usually done in 15–30 s) |
    | **steady on** | **done**: module set up. A text report goes out over the radio every 3 s |
    | fast blink (10 Hz) | the module didn't answer at any baud rate: check its power and TX/RX wiring |
    | slow blink (1 Hz) | it answered, but the settings didn't check out: see `g_log` / `g_after` in the debugger |
