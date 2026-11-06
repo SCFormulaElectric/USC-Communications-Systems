@@ -53,6 +53,7 @@ void xcheck_fill_therm(ts_therm_t *x)
     for (int k = 0; k < 8; k++) x->f384[k] = (uint8_t)xv(132u, 1000u + (uint32_t)k);
     for (int k = 0; k < 8; k++) x->f385[k] = (uint8_t)xv(133u, 1000u + (uint32_t)k);
     x->seen = (uint8_t)xv(134u, 0u);
+    for (int k = 0; k < 2; k++) x->motor_temp_vcu[k] = (uint8_t)xv(135u, 1000u + (uint32_t)k);
 }
 
 void xcheck_fill_diag(ts_diag_t *x)

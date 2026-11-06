@@ -37,11 +37,11 @@ brief, so it isn't applied.
 
 | Build | text | data | bss | Flash used | RAM (static + 0x200 heap + 0x400 stack) |
 |---|---|---|---|---|---|
-| Telemetry (flag 0) | 10820 | 12 | 3236 | **10,832 / 16,384 B (66.1%)** | 4,784 / 6,144 B |
-| Diag (flag 1) | 13200 | 12 | 3700 | **13,212 / 16,384 B (80.6%)** | 5,248 / 6,144 B |
-| Diag-first (flag 2) | 13132 | 12 | 3700 | 13,144 B (80.2%) | 5,248 B |
+| Telemetry (flag 0) | 10912 | 12 | 3244 | **10,924 / 16,384 B (66.7%)** | 4,792 / 6,144 B |
+| Diag (flag 1) | 13288 | 12 | 3708 | **13,300 / 16,384 B (81.2%)** | 5,256 / 6,144 B |
+| Diag-first (flag 2) | 13212 | 12 | 3708 | 13,224 B (80.7%) | 5,256 B |
 
-- Sizes include the CAN-start retry (see below). Before it, CubeIDE's own headless build of
+- Sizes include the CAN-start retry (see below) and 0x476 in THERM. Before it, CubeIDE's own headless build of
   `Telemetry` and `Diag` matched `build_fw.py` exactly, with 0 errors and 0 warnings.
 - The binaries contain no `printf`, floating point or `malloc`.
 
@@ -164,6 +164,17 @@ Interpretations where the brief was silent:
    - Tries during a lockup don't count toward the 10.
    - The CLI sets capture slot 0 to 0x181 when a session starts, as the brief says.
    - Raw log times are epoch seconds.
+
+## 4b. Added after the brief: 0x476 (VCU motor temperature)
+
+- THERM bytes 49–50 carry 0x476 B0–B1 exactly as received; THERM `seen` bit 6 = 0x476 received in
+  the last 2 s. It goes out once per second, with THERM.
+- The VCU relays the motor temperature as a 2-byte integer in °C. The PC decodes it as
+  **big-endian, signed** (YAML `decode: {type: i16, order: be}`), like the VCU's 0x473.
+- **Byte order not yet confirmed on the car.** If the value reads wrong (e.g. 40 °C shows as
+  10240), change `order` to `le` in the YAML. No firmware change is needed, since the firmware
+  doesn't interpret the bytes.
+- PC: `therm.csv` column `motor_temp_vcu_degC`, and `motor NNC` on the CLI status line.
 
 ## 5. Open issue: read replies are mostly lost (decision needed)
 

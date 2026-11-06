@@ -297,13 +297,16 @@ TEST(therm_and_diag_payloads)
     CAN(0x481, 0x12, 0x34);
     CAN(0x666, 0x56, 0x78);
     CANX(0x18EEFF80, 0x00);
+    CAN(0x476, 0x00, 0x41);                               /* VCU motor temp: bytes kept as received */
     step_to(1000 + 200 * 4);
     int got_therm = 0, got_diag = 0;
     for (int w = 0; w < NW; w++) {
         if (TYPE(w, 2) == TS_TYPE_THERM) {
             const ts_therm_t *t = &PK(w, 2)->p.therm;
             CHECK_EQ(t->f380[0], 1); CHECK_EQ(t->f385[0], 6); CHECK_EQ(t->f383[7], 0x83);
-            CHECK_EQ(t->seen, 0x3F);
+            CHECK_EQ(t->seen, 0x7F);                      /* bits 0-5: 0x1839F380-385, bit 6: 0x476 */
+            CHECK_EQ(t->motor_temp_vcu[0], 0x00);
+            CHECK_EQ(t->motor_temp_vcu[1], 0x41);
             got_therm = 1;
         }
         if (TYPE(w, 2) == TS_TYPE_DIAG) {
@@ -317,7 +320,7 @@ TEST(therm_and_diag_payloads)
             CHECK_EQ(g->raw_481, 0x3412);                 /* bytes copied: low byte = B0 */
             CHECK_EQ(g->raw_666, 0x7856);
             CHECK_EQ(g->raw_seen, 0x03);
-            CHECK_EQ(g->can_rx_total, 12);
+            CHECK_EQ(g->can_rx_total, 13);
             CHECK_EQ(g->can_rx_unused, 0);
             got_diag = 1;
         }

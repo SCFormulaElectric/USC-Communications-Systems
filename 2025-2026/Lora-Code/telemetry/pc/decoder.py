@@ -144,6 +144,12 @@ class Schema:
             raw = fields.get(n)
             if f.get("bits"):
                 vals[n] = self.bit_names(f["bits"], raw)
+            elif "decode" in f:
+                # bytes carried as received on CAN (u8[N]); the YAML says how to read them
+                dec = f["decode"]
+                v = int.from_bytes(bytes(raw), "big" if dec.get("order") == "be" else "little",
+                                   signed=dec["type"].startswith("i"))
+                vals[n] = v * f.get("scale", 1) + f.get("offset", 0)
             elif "scale_ref" in f:
                 ref = f["scale_ref"]
                 key = ref["field"].split(".")[-1]
