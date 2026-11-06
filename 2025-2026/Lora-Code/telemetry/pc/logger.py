@@ -50,7 +50,7 @@ class TelemetryLogger:
             if f["type"] == "struct":
                 continue
             cols.append(f["name"])
-            if "scale" in f or "offset" in f or "scale_ref" in f:
+            if "scale" in f or "offset" in f or "scale_ref" in f or "decode" in f:
                 unit = f.get("unit", "")
                 scaled.append(f"{f['name']}_{unit}" if unit else f"{f['name']}_scaled")
             if f.get("bits"):
@@ -75,7 +75,7 @@ class TelemetryLogger:
             for f in pl["fields"]:
                 if f["type"] == "struct":
                     continue
-                if "scale" in f or "offset" in f or "scale_ref" in f:
+                if "scale" in f or "offset" in f or "scale_ref" in f or "decode" in f:
                     v = d["values"].get(f["name"])
                     row.append("" if v is None else round(v, 4))
                 if f.get("bits"):

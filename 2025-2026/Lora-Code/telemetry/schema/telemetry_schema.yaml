@@ -97,7 +97,7 @@ payloads:
     type: 2
     c_name: therm
     rate: "1 Hz"
-    note: "Frames 0x1839F380..385 carried raw; contents not confirmed."
+    note: "Frames 0x1839F380..385 carried raw (contents not confirmed); bytes 49-50 = 0x476."
     fields:
       - {name: f380, pos: 0, type: "u8[8]", can: {id: 0x1839F380, ext: true, bytes: B0-7, order: raw}}
       - {name: f381, pos: 8, type: "u8[8]", can: {id: 0x1839F381, ext: true, bytes: B0-7, order: raw}}
@@ -105,7 +105,12 @@ payloads:
       - {name: f383, pos: 24, type: "u8[8]", can: {id: 0x1839F383, ext: true, bytes: B0-7, order: raw}}
       - {name: f384, pos: 32, type: "u8[8]", can: {id: 0x1839F384, ext: true, bytes: B0-7, order: raw}}
       - {name: f385, pos: 40, type: "u8[8]", can: {id: 0x1839F385, ext: true, bytes: B0-7, order: raw}}
-      - {name: seen, pos: 48, type: u8, note: "bit k = frame 0x1839F380 + k received in the last 2 s"}
+      - {name: seen, pos: 48, type: u8, note: "bit k = frame 0x1839F380 + k received in the last 2 s; bit 6 = 0x476"}
+      - {name: motor_temp_vcu, pos: 49, type: "u8[2]", can: {id: 0x476, bytes: B0-1, order: raw}, unit: "degC",
+         decode: {type: i16, order: be},
+         note: "Motor temperature relayed by the VCU, integer degC. The firmware copies B0-B1 as received;
+                the PC decodes them big-endian (high byte first, like the VCU's 0x473). If it reads wrong,
+                change decode.order to le here: no firmware change needed."}
 
   DIAG:
     type: 3

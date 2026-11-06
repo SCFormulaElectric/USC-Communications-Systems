@@ -78,6 +78,9 @@ class Cli:
             parts.append(f"tq {v['torque_cmd']:5.1f}%")
             parts.append(f"pack V {f['pack_voltage']} I {f['pack_current']} SOC {f['pack_soc']}")
             parts.append(f"cell {f['max_cell_temp']}C")
+            therm = self.link.latest.get("THERM")
+            if therm and therm["fields"]["seen"] & 0x40:            # 0x476 seen in the last 2 s
+                parts.append(f"motor {therm['values']['motor_temp_vcu']:.0f}C")
             parts.append(f"brk {f['brake1']}/{f['brake2']}")
             parts.append(" ".join(v["status"]) or "-")
             if len(v["valid"]) < 16:

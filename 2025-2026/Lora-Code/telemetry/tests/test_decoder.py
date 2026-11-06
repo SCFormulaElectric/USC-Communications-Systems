@@ -96,3 +96,11 @@ def test_register_names(schema):
     for reg in (0x30, 0x49, 0x4A):
         assert schema.registers[reg].get("read_blocked")
     assert FMT["i16"] == "<h"
+
+
+def test_vcu_motor_temp_0x476(schema):
+    """THERM bytes 49-50 carry 0x476 as received; the YAML decodes them big-endian, signed."""
+    for raw, want in ((bytes([0x00, 0x41]), 65), (bytes([0xFF, 0xF6]), -10), (bytes([0x00, 0x00]), 0)):
+        d = schema.decode_packet(schema.encode_packet("THERM", {"motor_temp_vcu": raw, "seen": 0x40}))
+        assert d["fields"]["motor_temp_vcu"] == raw
+        assert d["values"]["motor_temp_vcu"] == want

@@ -205,8 +205,9 @@ summaries). So THERM carries them **raw**, and the PC decodes them later.
 | Off | Field |
 |---|---|
 | 0–47 | Last 8 data bytes of each of 0x1839F380, 381, 382, 383, 384, 385 (6 × 8 B, in that order) |
-| 48 | Bitmap: bit k = frame 0x1839F380 + k received in the last 2 s |
-| 49–53 | Reserved |
+| 48 | Bitmap: bit k = frame 0x1839F380 + k received in the last 2 s; bit 6 = 0x476 |
+| 49–50 | 0x476 B0–1 as received: motor temperature relayed by the VCU, integer °C (added 2026-11-06; the PC decodes it big-endian, signed) |
+| 51–53 | Reserved |
 
 ### 3.5 DIAG payload (type 3, 1 Hz, also used as filler)
 

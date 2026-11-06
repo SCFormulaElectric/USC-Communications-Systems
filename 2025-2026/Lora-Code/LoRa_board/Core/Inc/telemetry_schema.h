@@ -243,7 +243,8 @@ typedef struct __attribute__((packed)) {
     uint8_t f384[8];
     uint8_t f385[8];
     uint8_t seen;
-    uint8_t _rsv49[5];
+    uint8_t motor_temp_vcu[2];
+    uint8_t _rsv51[3];
 } ts_therm_t;
 _Static_assert(sizeof(ts_therm_t) == 54, "ts_therm_t size");
 _Static_assert(offsetof(ts_therm_t, f380) == 0, "ts_therm_t.f380 offset");
@@ -253,6 +254,7 @@ _Static_assert(offsetof(ts_therm_t, f383) == 24, "ts_therm_t.f383 offset");
 _Static_assert(offsetof(ts_therm_t, f384) == 32, "ts_therm_t.f384 offset");
 _Static_assert(offsetof(ts_therm_t, f385) == 40, "ts_therm_t.f385 offset");
 _Static_assert(offsetof(ts_therm_t, seen) == 48, "ts_therm_t.seen offset");
+_Static_assert(offsetof(ts_therm_t, motor_temp_vcu) == 49, "ts_therm_t.motor_temp_vcu offset");
 
 typedef struct __attribute__((packed)) {
     uint16_t fw_version;

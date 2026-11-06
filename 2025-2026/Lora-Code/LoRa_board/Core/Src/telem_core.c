@@ -68,6 +68,9 @@ static struct {
     uint16_t reg_seen;
     uint8_t raw[3][2];
     uint32_t raw_t[3];
+    uint8_t vcu_mt[2];          /* 0x476 B0-B1 as received (VCU-relayed motor temperature) */
+    uint8_t vcu_mt_ever;
+    uint32_t vcu_mt_t;
     /* frames per 100 ms */
     uint16_t frames_cur, frames_last100;
     /* scheduling */
@@ -251,6 +254,11 @@ void telem_on_can(const can_frame_t *f)
             S.bms_fault = d[0];
         }
         return;
+    case 0x476:                         /* motor temperature relayed by the VCU, 2 bytes */
+        if (n >= 2) { S.vcu_mt[0] = d[0]; S.vcu_mt[1] = d[1]; }
+        S.vcu_mt_t = t;
+        S.vcu_mt_ever = 1;
+        return;
     case 0x777:
         S.dash = 1;
         telem_push_event(TS_EVT_DASH_BUTTON, n >= 2 ? le16(d) : (n ? d[0] : 0), t);
@@ -350,7 +358,10 @@ static void build_therm(ts_therm_t *t, uint32_t now)
     uint8_t seen_bits = 0;
     for (uint8_t k = 0; k < 6; k++)
         if (((S.therm_ever >> k) & 1u) && within(now, S.therm_t[k], 2000)) seen_bits |= (uint8_t)(1u << k);
+    if (S.vcu_mt_ever && within(now, S.vcu_mt_t, 2000)) seen_bits |= (uint8_t)(1u << 6);
     t->seen = seen_bits;
+    t->motor_temp_vcu[0] = S.vcu_mt[0];               /* bytes as received; the PC decodes them */
+    t->motor_temp_vcu[1] = S.vcu_mt[1];
 }
 
 static void build_diag(ts_diag_t *g, uint32_t now)

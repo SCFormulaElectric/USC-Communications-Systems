@@ -68,6 +68,7 @@ Sends the frames below on their own schedules, using `millis()` deadlines (`next
 | 0x302 | BMS | B0–1 SOC16 BE, B2–3 resistance BE, B4 high temp, B5 low temp | 100 ms (assumed) | |
 | 0x303 | BMS | B0–3 fault flags BE u32 | 100 ms (assumed) | |
 | 0x588 | BMS | B0 = fault number | 500 ms (assumed) | |
+| 0x476 | VCU | B0–1 = motor temperature, integer °C, **BE i16** (byte order unconfirmed: make it a switch) | 500 ms (assumed) | THERM bytes 49–50; `seen` bit 6 |
 | 0x1839F380 ext | thermistor module | B2 = max cell temp °C (8 bytes) | 100 ms (assumed) | |
 | 0x1839F381–385 ext | thermistor module | 8 bytes each, any recognisable pattern | 500 ms (assumed) | the board forwards them raw |
 | 0x18EEFF80 ext | thermistor module heartbeat | any | 200 ms (assumed) | valid timeout 1 s |
@@ -138,6 +139,7 @@ by eye. Suggested values (decoded as `telem_core.c` does):
 | 0x303 | `00 00 00 00` | fault flags 0 |
 | 0x1839F380 | `01 02 20 04 05 06 07 08` | max cell temp 32 °C |
 | 0x588 | `00` | BMS fault number 0 |
+| 0x476 | `00 28` | THERM motor temp 40 °C; status line `motor 40C` |
 | 0x364 / 0x365 | `01 00` / `01 02` | brake1 256, brake2 258 |
 | 0x181 0x49 | `49 39 2D 00` (raw 11577) | motor temp ≈ 40.0 °C ((raw − 9369) / 55.21) |
 | 0x181 0x4A | `4A E0 2E 00` | IGBT raw 12000 |
