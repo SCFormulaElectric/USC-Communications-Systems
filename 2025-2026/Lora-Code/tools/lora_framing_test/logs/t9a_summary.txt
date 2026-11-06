@@ -1,0 +1,4 @@
+T9 t9a: PC -> car commands (no telemetry)
+  commands: sent  50  delivered  50 (100.0%)  lat p50/p95/max 128.66/128.95/129.09 ms, duplicates 0, bad-CRC candidates 0
+  car port: 0 'channel Error' lines; other bytes not in commands: ''
+  PC port: 0 bytes not in telemetry packets

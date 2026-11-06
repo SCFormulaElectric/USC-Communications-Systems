@@ -1,0 +1,16 @@
+T9 t9c: PC -> car commands (car sends 3 x 64 B every 200 ms, skipping every 5th write)
+  commands: sent 180  delivered  73 (40.6%)  lat p50/p95/max 129.08/140.3/146.43 ms, duplicates 0, bad-CRC candidates 0
+  by car module state when the command was written (collecting 0-101 ms after a car write starts, then 0.6 ms/B airtime (estimate, not measured per packet)):
+    collecting        sent  68  delivered   0 (0.0%)  lat p50/p95/max None/None/None ms
+    collect+transmit  sent   7  delivered   0 (0.0%)  lat p50/p95/max None/None/None ms
+    transmitting      sent  66  delivered  43 (65.2%)  lat p50/p95/max 129.17/141.37/146.43 ms
+    idle              sent  39  delivered  30 (76.9%)  lat p50/p95/max 129.05/130.32/131.29 ms
+  busy (any non-idle): sent 141  delivered  43 (30.5%)  lat p50/p95/max 129.17/141.37/146.43 ms
+  idle:                sent  39  delivered  30 (76.9%)  lat p50/p95/max 129.05/130.32/131.29 ms
+  inside skipped-write gap:  sent  40  delivered  31 (77.5%)  lat p50/p95/max 129.05/130.18/131.29 ms
+  outside gap:               sent 140  delivered  42 (30.0%)  lat p50/p95/max 129.17/141.37/146.43 ms
+  delivered/sent by ms since last car write start (20 ms buckets):
+    0:0/16  20:0/16  40:0/13  60:0/12  80:0/18  100:0/8  120:10/16  140:16/16  160:15/17  180:1/8  200:2/2  220:2/2  240:1/1  260:3/3  280:2/2  300:8/8  320:4/4  340:6/6  360:3/5  380:0/6  400:0/1
+  telemetry: sent 2160, ok 1836, loss 15.0%, bad-CRC candidates 0, bytes skipped 0, lat p50/p95 226.94/233.19 ms
+  car port: 0 'channel Error' lines; other bytes not in commands: ''
+  PC port: 0 bytes not in telemetry packets

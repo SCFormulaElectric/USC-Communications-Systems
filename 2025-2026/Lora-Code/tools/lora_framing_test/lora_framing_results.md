@@ -107,12 +107,57 @@ write:
 | 3 | 400 ms | 7.5 | 150 | 150 | 0% | 226.6 / 232.4 / 233.7 | 0 |
 | 3 | 214 ms | **14.0** | 420 | 420 | **0%** | 226.5 / 232.4 / 233.4 | 0 |
 | 2 | 143 ms | **14.0** | 418 | 418 | **0%** | 188.3 / 193.5 / 194.3 | 0 |
+| 3 | 200 ms | 15.0 | 4500 | 4500 | **0%** | 226.8 / 233.1 / 236.3 | 0 |
 
 - 20 s per row; 30 s for the two 14/s rows.
+- The 3 × 200 ms row ran for 5 minutes (`logs/t8_3x200_5min_*`). At 15/s it is **above the
+  brief's 14/s cap** and was run on request. All 1500 writes arrived as exactly 192 B. One
+  write started late, so the closest pair of writes was 170 ms apart; no loss.
 - In every 0%-loss row the RX stream was clean: 0 bytes skipped, 0 bad-CRC candidates, and
   arrivals were exactly k × 64 B.
 - In the 214 ms and 143 ms rows, a new write starts before the previous batch has finished
   arriving, so the module buffers new input while it is transmitting.
+
+**T9 – PC → car commands (two-way traffic).** The PC-side module (COM9) sends one 24 B
+command per second (header `0A 02 03`) to the car-side module, at a random time in each
+second. Meanwhile the car side sends 3 × 64 B telemetry per write on the schedule below.
+
+| Sub-test | Car telemetry | Length | Commands delivered | Command latency p50 / p95 / max | Telemetry lost |
+|---|---|---|---|---|---|
+| t9a | none | 50 s | **50/50 (100%)** | 128.7 / 129.0 / 129.1 ms | — |
+| t9b | 3 × 64 B every 200 ms (15/s) | 180 s | 22/180 (12.2%) | 129.1 / 141.2 / 143.0 ms | 389/2700 (14.4%) |
+| t9c | as t9b, every 5th write skipped (12/s) | 180 s | 73/180 (40.6%); inside the skipped-write gap 31/40 (77.5%) | 129.1 / 140.3 / 146.4 ms | 324/2160 (15.0%) |
+| t9d | 3 × 64 B every 250 ms (12/s) | 180 s | 55/180 (30.6%) | 129.0 / 144.7 / 146.5 ms | 266/2160 (12.3%) |
+
+- With no telemetry, every command arrived. The car module printed nothing (0 `channel
+  Error`), and no command arrived corrupted or twice in any sub-test.
+- **The losses fit an on-air collision model.** Each module goes on air ~101 ms after a
+  write starts (the T2 window). A 3 × 64 B batch then stays on air ~130 ms, and a command
+  ~25 ms. (Fitted to the data; close to the textbook LoRa airtime at SF5/125 kHz/CR 4/6,
+  ≈ 128 ms and ≈ 24 ms.) When a command's on-air time overlaps a telemetry batch's, one or
+  both are lost:
+
+  | Sub-test | Commands: model matches | Telemetry writes: model matches |
+  |---|---|---|
+  | t9b | 90% | 91% |
+  | t9c | 98% | **100%** (108 of 110 overlapping batches lost; 0 of 610 non-overlapping) |
+  | t9d | 87% | 90% |
+
+  With slightly shorter airtimes (0.6 ms/B + 4 ms ≈ 121 ms and ≈ 18 ms), **all 317
+  commands predicted to overlap a car transmission were lost**
+  (`py t9_collision_check.py 121 18`). The ~10% of t9b/t9d outcomes the model gets
+  wrong were not explained. Script: `t9_collision_check.py`.
+- The script's own "collecting / transmitting" columns show the car module's state when
+  the command was *written*. The collision happens ~101 ms later, when both are on air.
+  The "0% delivered while collecting" result holds as a rule of thumb, but the cause is
+  the collision ~101 ms later.
+- **What it means:** at one batch every 200 ms the car is on air ~65% of the time, leaving
+  ~70 ms of quiet per cycle. Commands sent at random times mostly collide, and they cost
+  telemetry when they do.
+  - A reserved quiet slot (t9c) raised command delivery to 78% inside the gap.
+  - Getting close to 100% needs the PC to time each command so its on-air time falls in
+    the car's quiet time, e.g. a fixed delay after a telemetry batch arrives. **Not tested
+    yet.**
 
 ## What this means for the car firmware
 
@@ -186,6 +231,7 @@ py framing_tests.py run t7                       # trickle
 py framing_tests.py run t8                       # rate/batching (--configs 3x214,2x143 --duration 30)
 py framing_tests.py run t9                       # PC -> car commands: t9a-t9d in a row (~11 min)
 py framing_tests.py run t9b --duration 60        # one T9 sub-test, shorter
+py t9_collision_check.py 130 25                  # T9 on-air collision model vs. results
 py framing_tests.py analyze t3 --gap-ms 10       # re-analyze any saved log
 ```
 
