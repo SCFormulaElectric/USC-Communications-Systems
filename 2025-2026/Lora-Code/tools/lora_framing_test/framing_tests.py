@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""DX-LR02 UART->radio framing tests (T0-T9). See lora_framing_results.md.
+"""DX-LR02 UART->radio framing tests (T0-T10). See lora_framing_results.md.
 
 Run a test (logs raw CSV to logs/<test>_raw.csv, then analyzes it):
     py framing_tests.py run t1 --tx COM8 --rx COM9
 Re-analyze a saved log with a different arrival-group gap:
     py framing_tests.py analyze t1 --gap-ms 5
 T9 (PC -> car commands): run t9a / t9b / t9c / t9d, or t9 for all four in a row.
+T10 (commands timed after each telemetry batch): run t10 = delay sweep, then a soak at the
+best delay (t10s). Soak alone: run t10s --delay 110.
 
 Modules are in MODE1 (fixed-point): every UART write that starts a packet carries the
 3-byte header [RX addr hi][RX addr lo][channel] = 0A 01 03, which the RX module strips.
@@ -772,12 +774,188 @@ def analyze_t9(args, test):
     write_summary(name, s, "\n".join(lines))
 
 
+# --------------------------------------------------------------------------- T10: commands timed to the car's quiet gap
+# T9 showed commands are lost when their on-air time overlaps a telemetry batch's. The PC can't
+# see when the car writes, but it sees each batch arrive. T10 sends each command a fixed delay
+# after a batch's last byte arrives, to find the delay that lands it in the car's quiet gap.
+T10_DELAYS_MS = list(range(70, 151, 10))
+T10_EVERY = 2           # command after every 2nd batch that arrives (one command per 400 ms)
+T10_BATCH_GAP = 0.010   # a batch has fully arrived after 10 ms with no RX bytes
+T10_PERIOD = 0.2        # car: 3 x 64 B every 200 ms (production pattern)
+
+
+def run_t10(args, name, delays, per_delay=None, duration=None):
+    """Sweep (per_delay set): every delay gets per_delay commands, interleaved in random order.
+    Soak (duration set): one delay for `duration` seconds."""
+    rnd = random.Random(101)
+    order = []
+    if per_delay:
+        for _ in range(per_delay):
+            r = delays[:]
+            rnd.shuffle(r)
+            order += r
+    tx, rx, rec = open_pair(args)
+    t_base = now() + 0.5
+    t_end = t_base + duration if duration else None
+    car_i = seq = cseq = n_batches = seen = grp_bytes = 0
+    grp_last = None
+    pending = None          # (send time, delay ms, batch arrival time)
+    last_cmd = -1.0
+    skipped_late = 0
+
+    def batch_arrived(a):
+        nonlocal n_batches, pending, skipped_late
+        n_batches += 1
+        if n_batches % T10_EVERY or pending is not None:
+            return
+        if per_delay:
+            if cseq >= len(order):
+                return
+            d = order[cseq]
+        else:
+            if now() > t_end - 1.0:
+                return
+            d = delays[0]
+        t_send = a + d / 1000
+        if t_send < now() or t_send - last_cmd < 0.15:
+            skipped_late += 1
+            return
+        pending = (t_send, d, a)
+
+    while True:
+        t = now()
+        if per_delay and cseq >= len(order) and pending is None and t_end is None:
+            t_end = t + 1.0  # last command sent: let its batch go out, then stop
+        if t_end is not None and t >= t_end:
+            break
+        if t >= t_base + car_i * T10_PERIOD:
+            pkts = [build_packet(seq + j, int((t - t_base) * 1000), rnd) for j in range(3)]
+            rec.write(tx.ser, HDR + b"".join(pkts),
+                      {"test": name, "dir": "car", "i": car_i, "seqs": list(range(seq, seq + 3))})
+            seq += 3
+            car_i += 1
+        if pending is not None and now() >= pending[0]:
+            t_send, d, a = pending
+            t_w, _ = rec.write(rx.ser, HDR_TO_CAR + build_command(cseq, rnd),
+                               {"test": name, "dir": "cmd", "cseq": cseq & 0xFF, "delay_ms": d,
+                                "a_s": a - rec.t0, "late_ms": round((now() - t_send) * 1000, 2)})
+            last_cmd = t_w
+            cseq += 1
+            pending = None
+        # watch the PC-side port for batch arrivals
+        with rec.lock:
+            new = rec.rows[seen:]
+            seen = len(rec.rows)
+        for row_t, label, data, _, _ in new:
+            if label != "RX":
+                continue
+            if grp_last is not None and row_t - grp_last > T10_BATCH_GAP:
+                if grp_bytes >= 64:
+                    batch_arrived(grp_last)
+                grp_bytes = 0
+            grp_last = row_t
+            grp_bytes += len(data)
+        if grp_last is not None and now() - grp_last > T10_BATCH_GAP and grp_bytes:
+            if grp_bytes >= 64:
+                batch_arrived(grp_last)
+            grp_bytes = 0
+    print(f"{name}: sent {cseq} commands and {seq} telemetry packets "
+          f"({skipped_late} batches skipped: command would have been late or too close to the previous one)")
+    close_pair(name, tx, rx, rec, tail=3.0)
+    return analyze_t10(args, name)
+
+
+def analyze_t10(args, name):
+    writes, reads, _ = load_csv(os.path.join(LOGS, f"{name}_raw.csv"))
+    car_w = [w for w in writes if w["tag"]["dir"] == "car"]
+    cmd_w = [w for w in writes if w["tag"]["dir"] == "cmd"]
+    car_starts = [w["t_start"] for w in car_w]
+
+    got = {f: t for f, t, _ in reversed(parse_stream(reads["TX"], CMD_LEN)[0])}
+    tel_good, tel_bad_crc, tel_skipped, _ = parse_stream(reads["RX"])
+    tel_rx = {f for f, _, _ in tel_good}
+    car_ok = [all(w["data"][len(HDR):][j:j + 64] in tel_rx for j in range(0, len(w["data"]) - len(HDR), 64))
+              for w in car_w]
+
+    rows, near = [], set()
+    for w in cmd_w:
+        tag = w["tag"]
+        frame = w["data"][len(HDR_TO_CAR):]
+        k = bisect.bisect_right(car_starts, w["t_start"]) - 1
+        around = [i for i in (k, k + 1) if 0 <= i < len(car_w)]  # car writes either side
+        near.update(around)
+        # the batch that triggered this command was written ~245 ms before it arrived
+        src = [w2["t_start"] for w2 in car_w if 0.15 < tag["a_s"] - w2["t_start"] < 0.35]
+        rows.append({"cseq": tag["cseq"], "delay_ms": tag["delay_ms"],
+                     "actual_delay_ms": ms(w["t_start"] - tag["a_s"]), "late_ms": tag["late_ms"],
+                     "phase_ms": ms(w["t_start"] - car_starts[k]) if k >= 0 else None,
+                     "arrival_after_write_ms": ms(tag["a_s"] - src[-1]) if src else None,
+                     "delivered": frame in got,
+                     "latency_ms": ms(got[frame] - wire_end(w)) if frame in got else None,
+                     "telemetry_lost_around": sum(not car_ok[i] for i in around)})
+
+    by_delay = {}
+    for d in sorted({r["delay_ms"] for r in rows}):
+        rs = [r for r in rows if r["delay_ms"] == d]
+        lat = [r["latency_ms"] for r in rs if r["delivered"]]
+        act = [r["actual_delay_ms"] for r in rs]
+        lost_tel = sum(r["telemetry_lost_around"] for r in rs)
+        by_delay[d] = {"sent": len(rs), "delivered": len(lat), "pct": round(100 * len(lat) / len(rs), 1),
+                       "telemetry_writes_lost_around": lost_tel,
+                       "telemetry_loss_pct_around": round(100 * lost_tel / (2 * len(rs)), 1),
+                       "lat_p50_ms": pct(lat, 50), "lat_p95_ms": pct(lat, 95),
+                       "actual_delay_p50_ms": pct(act, 50), "actual_delay_max_ms": max(act),
+                       "phase_p50_ms": pct([r["phase_ms"] for r in rs if r["phase_ms"] is not None], 50)}
+    # best delay: highest (delivered % - telemetry loss %); among near-ties, the middle one
+    score = {d: v["pct"] - v["telemetry_loss_pct_around"] for d, v in by_delay.items()}
+    top = max(score.values()) if score else None
+    best_set = [d for d in by_delay if score[d] >= top - 2.5] if score else []
+    best = best_set[len(best_set) // 2] if best_set else None
+
+    far = [ok for i, ok in enumerate(car_ok) if i not in near]
+    arr = [r["arrival_after_write_ms"] for r in rows if r["arrival_after_write_ms"] is not None]
+    s = {
+        "commands": {"sent": len(rows), "delivered": sum(r["delivered"] for r in rows)},
+        "by_delay": by_delay, "best_delay_ms": best, "near_best": best_set,
+        "telemetry": {"writes": len(car_w), "writes_ok": sum(car_ok),
+                      "lost_near_a_command": sum(not car_ok[i] for i in near),
+                      "lost_with_no_command_near": far.count(False), "writes_with_no_command_near": len(far),
+                      "bad_crc_candidates": tel_bad_crc, "bytes_skipped": tel_skipped},
+        "batch_arrival_after_car_write_ms": {"p5": pct(arr, 5), "p50": pct(arr, 50), "p95": pct(arr, 95),
+                                             "max": max(arr) if arr else None},
+        "late_commands_over_2ms": sum(r["late_ms"] > 2 for r in rows),
+        "car_port_channel_errors": b"".join(d for _, d in reads["TX"]).count(b"channel Error"),
+        "rows": rows,
+    }
+    t = s["telemetry"]
+    lines = [f"T10 {name}: commands sent a fixed delay after a telemetry batch arrives "
+             f"(car: 3 x 64 B every {int(T10_PERIOD * 1000)} ms; command after every {T10_EVERY}nd batch)",
+             f"  commands: sent {s['commands']['sent']}, delivered {s['commands']['delivered']}",
+             "  delay ms  sent  delivered      telemetry writes lost around  lat p50/p95 ms   "
+             "actual delay p50/max   ms since car write"]
+    for d, v in by_delay.items():
+        lines.append(f"  {d:8}  {v['sent']:4d}  {v['delivered']:4d} ({v['pct']:5.1f}%)  "
+                     f"{v['telemetry_writes_lost_around']:4d} of {2 * v['sent']:<4d} ({v['telemetry_loss_pct_around']:5.1f}%)"
+                     f"      {v['lat_p50_ms']}/{v['lat_p95_ms']}     {v['actual_delay_p50_ms']}/{v['actual_delay_max_ms']}"
+                     f"          {v['phase_p50_ms']}")
+    lines.append(f"  best delay: {best} ms (delays within 2.5 points of the best score: {best_set})")
+    lines.append(f"  telemetry: {t['writes_ok']} of {t['writes']} writes fully received; lost near a command "
+                 f"{t['lost_near_a_command']}, lost with no command near {t['lost_with_no_command_near']} of "
+                 f"{t['writes_with_no_command_near']}; bad-CRC candidates {t['bad_crc_candidates']}, "
+                 f"bytes skipped {t['bytes_skipped']}")
+    lines.append(f"  batch arrival after its car write started, ms: {s['batch_arrival_after_car_write_ms']}")
+    lines.append(f"  commands written >2 ms late: {s['late_commands_over_2ms']}; "
+                 f"car port 'channel Error' lines: {s['car_port_channel_errors']}")
+    write_summary(name, s, "\n".join(lines))
+    return best
+
+
 # --------------------------------------------------------------------------- CLI
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("action", choices=["run", "analyze"])
     p.add_argument("test", choices=["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8",
-                                    "t9", "t9a", "t9b", "t9c", "t9d"])
+                                    "t9", "t9a", "t9b", "t9c", "t9d", "t10", "t10s"])
     p.add_argument("--tx", default="COM8", help="car-side module (MAC 0a,02)")
     p.add_argument("--rx", default="COM9", help="PC-side module (MAC 0a,01)")
     p.add_argument("--gap-ms", type=float, default=5.0, help="arrival-group gap threshold (default 5 ms)")
@@ -787,6 +965,9 @@ def main():
     p.add_argument("--sizes", default=None, help="t1: comma-separated data sizes (overrides default list)")
     p.add_argument("--pauses", default=None, help="t2/t5: comma-separated pauses in ms (overrides default)")
     p.add_argument("--configs", default=None, help="t8: e.g. 3x214,2x143 (packets per write x period ms)")
+    p.add_argument("--delays", default=None, help="t10: comma-separated command delays in ms (default 70-150)")
+    p.add_argument("--delay", type=int, default=None, help="t10s: command delay in ms")
+    p.add_argument("--no-soak", action="store_true", help="t10: sweep only, skip the soak at the best delay")
     args = p.parse_args()
     global T1_SIZES, T2_PAUSES_MS, T5_PAUSES_MS, T8_CONFIGS
     if args.configs:
@@ -813,6 +994,23 @@ def main():
                 run_t9(args, name)
             else:
                 analyze_t9(args, name)
+        return
+    if t in ("t10", "t10s"):
+        if args.action == "analyze":
+            analyze_t10(args, args.name or t)
+            return
+        if t == "t10":
+            delays = [int(x) for x in args.delays.split(",")] if args.delays else T10_DELAYS_MS
+            best = run_t10(args, args.name or "t10", delays, per_delay=args.reps or 40)
+            if args.no_soak or best is None:
+                return
+            print(f"\nsoak at the best delay, {best} ms ...")
+            time.sleep(2.0)
+            run_t10(args, "t10s", [best], duration=args.duration or 180)
+        else:
+            if args.delay is None:
+                p.error("t10s needs --delay MS")
+            run_t10(args, args.name or "t10s", [args.delay], duration=args.duration or 180)
         return
     if args.action == "run":
         {"t0": run_t0, "t1": run_t1, "t2": lambda a: run_pairs(a, "T2"), "t3": lambda a: run_prod(a, "T3"),

@@ -231,6 +231,8 @@ py framing_tests.py run t7                       # trickle
 py framing_tests.py run t8                       # rate/batching (--configs 3x214,2x143 --duration 30)
 py framing_tests.py run t9                       # PC -> car commands: t9a-t9d in a row (~11 min)
 py framing_tests.py run t9b --duration 60        # one T9 sub-test, shorter
+py framing_tests.py run t10                      # command delay sweep 70-150 ms, then 3 min soak at the best (~7 min)
+py framing_tests.py run t10s --delay 110         # soak at one delay only
 py t9_collision_check.py 130 25                  # T9 on-air collision model vs. results
 py framing_tests.py analyze t3 --gap-ms 10       # re-analyze any saved log
 ```
