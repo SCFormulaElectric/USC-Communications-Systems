@@ -1,0 +1,335 @@
+# SC Formula Electric car telemetry over LoRa: single source of truth for every packet.
+#
+# - Firmware: gen_schema.py turns this file into LoRa_board/Core/Inc/telemetry_schema.h
+#   (packed structs + #defines). Run `py gen_schema.py --check` to confirm it is up to date.
+# - PC tools (telemetry/pc/decoder.py) read this file directly at runtime.
+#
+# Conventions
+# - All multi-byte fields on the radio are little-endian unless the type is a byte array.
+# - `pos` is the byte offset inside the payload (add packet.payload_off for the packet offset).
+# - Types: u8 i8 u16 i16 u32 i32, "u8[N]" byte arrays, and `struct` arrays (count x size).
+# - `can` documents where the firmware gets a value: id, ext (29-bit), reg (Bamocar register
+#   in B0 of 0x181/0x201), bytes, order (be = big-endian on the CAN bus, le = little-endian,
+#   raw = bytes copied as received).
+# - Display value = raw * scale + offset. `scale_ref` means the scale depends on another
+#   field (see its note). `todo` marks scaling that is not decided yet: the PC shows raw.
+
+version: 1
+firmware_version: 0x0100        # DIAG offset 0 (major << 8 | minor)
+
+crc:
+  name: CRC-16/CCITT-FALSE
+  poly: 0x1021
+  init: 0xFFFF
+  check: {input: "123456789", value: 0x29B1}
+
+transport:
+  header_car_to_pc: [0x0A, 0x01, 0x03]   # PC module MAC 0a,01 + channel 03
+  header_pc_to_car: [0x0A, 0x02, 0x03]   # car module MAC 0a,02 + channel 03
+  write_period_ms: 200                   # car: one write every 200 ms
+  packets_per_write: 3                   # always exactly 3 x 64 B
+  write_size: 195                        # 3-byte header + 3 x 64 B
+  min_write_gap_ms: 120                  # writes from one side start >= 120 ms apart
+  max_write_size: 250
+  command_delay_ms: 110                  # PC sends a command 110 ms after a batch arrives
+  pc_min_write_gap_ms: 150
+  module_text: ["Power on\r\n", "channel Error:"]
+
+packet:
+  size: 64
+  sync: [0xA5, 0x5A]
+  version: 1
+  payload_off: 8
+  payload_size: 54
+  crc_off: 62                            # CRC over bytes 0..61
+  fields:
+    - {name: sync, pos: 0, type: "u8[2]"}
+    - {name: ver_type, pos: 2, type: u8, note: "version << 4 | type"}
+    - {name: seq, pos: 3, type: u8, note: "one counter for all packets, wraps"}
+    - {name: uptime_ms, pos: 4, type: u32, unit: ms, note: "car uptime when the packet was built"}
+
+types:
+  FAST: 1
+  THERM: 2
+  DIAG: 3
+  EVENT: 4
+  DIAG_RESP: 5
+  COMMAND: 8
+
+payloads:
+  FAST:
+    type: 1
+    c_name: fast
+    rate: "10 Hz (two per write)"
+    fields:
+      - {name: valid, pos: 0, type: u16, bits: valid_bits}
+      - {name: status, pos: 2, type: u16, bits: status_bits}
+      - {name: brake1, pos: 4, type: u16, can: {id: 0x364, bytes: B0-1, order: be}, scale: 1, todo: "brake scaling"}
+      - {name: brake1_prev, pos: 6, type: u16, can: {id: 0x364, bytes: B0-1, order: be}, note: "50 ms earlier", scale: 1, todo: "brake scaling"}
+      - {name: brake2, pos: 8, type: u16, can: {id: 0x365, bytes: B0-1, order: be}, scale: 1, todo: "brake scaling"}
+      - {name: brake2_prev, pos: 10, type: u16, can: {id: 0x365, bytes: B0-1, order: be}, note: "50 ms earlier", scale: 1, todo: "brake scaling"}
+      - {name: torque_cmd, pos: 12, type: i16, can: {id: 0x201, reg: 0x90, bytes: B1-2, order: le}, unit: "%", scale: 0.0030518509475997192, note: "raw / 32767 x 100 (0x7FFF = 100%)"}
+      - {name: torque_cmd_prev, pos: 14, type: i16, can: {id: 0x201, reg: 0x90, bytes: B1-2, order: le}, unit: "%", scale: 0.0030518509475997192, note: "50 ms earlier"}
+      - {name: torque_req, pos: 16, type: i16, can: {id: 0x473, bytes: B0-1, order: be}, unit: Nm, scale: 0.1, note: "commanded torque, 0.1 Nm"}
+      - {name: speed, pos: 18, type: i16, can: {id: 0x181, reg: 0x30, bytes: B1-2, order: le}, unit: rpm, scale_ref: {field: DIAG.nmax, divisor: 32767}, note: "rpm = raw / 32767 x Nmax (DIAG nmax)"}
+      - {name: dc_bus, pos: 20, type: i16, can: {id: 0x181, reg: "0xEB or 0x66", bytes: B1-2, order: le}, unit: V, scale: 1, todo: "Bamocar model unknown: 0.031663506 (700-100, 700-160) or 0.0181423 (400-400, 700-250), manual p.20"}
+      - {name: pack_current, pos: 22, type: u16, can: {id: 0x301, bytes: B0-1, order: be}, scale: 1, todo: "BMS scaling"}
+      - {name: pack_voltage, pos: 24, type: u16, can: {id: 0x301, bytes: B2-3, order: be}, scale: 1, todo: "BMS scaling"}
+      - {name: pack_soc, pos: 26, type: u8, can: {id: 0x301, bytes: B4}, scale: 1, todo: "BMS scaling"}
+      - {name: max_cell_temp, pos: 27, type: u8, can: {id: 0x1839F380, ext: true, bytes: B2}, unit: "degC"}
+      - {name: bms_fault_num, pos: 28, type: u8, can: {id: 0x588, bytes: B0}}
+      - {name: reserved29, pos: 29, type: u8}
+      - {name: motor_temp, pos: 30, type: i16, can: {id: 0x181, reg: 0x49, bytes: B1-2, order: le}, unit: "degC", scale: 0.018112660749864156, offset: -169.69751856547725, note: "(raw - 9369) / 55.21, from the GEVCU code"}
+      - {name: igbt_temp, pos: 32, type: i16, can: {id: 0x181, reg: 0x4A, bytes: B1-2, order: le}, scale: 1, todo: "IGBT temp scaling"}
+      - {name: i_actual, pos: 34, type: i16, can: {id: 0x181, reg: 0x20, bytes: B1-2, order: le}, scale: 1, todo: "current scaling (I device 0xC6 / I 200% 0xD9)"}
+      - {name: kern_status, pos: 36, type: u16, can: {id: 0x181, reg: 0x40, bytes: B1-2, order: le}, note: "needs the GEVCU change (6.2)"}
+      - {name: bms_fault_flags, pos: 38, type: u32, can: {id: 0x303, bytes: B0-3, order: be}}
+      - {name: pack_ocv, pos: 42, type: u16, can: {id: 0x301, bytes: B5-6, order: be}, scale: 1, todo: "BMS scaling"}
+      - {name: pack_resistance, pos: 44, type: u16, can: {id: 0x302, bytes: B2-3, order: be}, scale: 1, todo: "BMS scaling"}
+      - {name: bms_high_temp, pos: 46, type: u8, can: {id: 0x302, bytes: B4}, scale: 1, todo: "BMS scaling"}
+      - {name: bms_low_temp, pos: 47, type: u8, can: {id: 0x302, bytes: B5}, scale: 1, todo: "BMS scaling"}
+      - {name: soc16, pos: 48, type: u16, can: {id: 0x302, bytes: B0-1, order: be}, scale: 1, todo: "BMS scaling"}
+      - {name: can_frames_100ms, pos: 50, type: u16, note: "CAN frames received in the last 100 ms (STM32)"}
+      - {name: ack_seq, pos: 52, type: u8, note: "last command sequence number acknowledged (0 if none)"}
+      - {name: ack_status, pos: 53, type: u8, enum: status_codes, note: "0xFF = no command yet"}
+
+  THERM:
+    type: 2
+    c_name: therm
+    rate: "1 Hz"
+    note: "Frames 0x1839F380..385 carried raw; contents not confirmed."
+    fields:
+      - {name: f380, pos: 0, type: "u8[8]", can: {id: 0x1839F380, ext: true, bytes: B0-7, order: raw}}
+      - {name: f381, pos: 8, type: "u8[8]", can: {id: 0x1839F381, ext: true, bytes: B0-7, order: raw}}
+      - {name: f382, pos: 16, type: "u8[8]", can: {id: 0x1839F382, ext: true, bytes: B0-7, order: raw}}
+      - {name: f383, pos: 24, type: "u8[8]", can: {id: 0x1839F383, ext: true, bytes: B0-7, order: raw}}
+      - {name: f384, pos: 32, type: "u8[8]", can: {id: 0x1839F384, ext: true, bytes: B0-7, order: raw}}
+      - {name: f385, pos: 40, type: "u8[8]", can: {id: 0x1839F385, ext: true, bytes: B0-7, order: raw}}
+      - {name: seen, pos: 48, type: u8, note: "bit k = frame 0x1839F380 + k received in the last 2 s"}
+
+  DIAG:
+    type: 3
+    c_name: diag
+    rate: "1 Hz, also filler"
+    fields:
+      - {name: fw_version, pos: 0, type: u16}
+      - {name: build_flag, pos: 2, type: u8, note: "TELEM_BAMO_DIAG 0/1/2"}
+      - {name: build_opts, pos: 3, type: u8, bits: build_opt_bits}
+      - {name: can_rx_total, pos: 4, type: u32}
+      - {name: can_rx_unused, pos: 8, type: u32, note: "frames whose ID isn't used by any field"}
+      - {name: can_tec, pos: 12, type: u8}
+      - {name: can_rec, pos: 13, type: u8}
+      - {name: can_busoff_count, pos: 14, type: u8}
+      - {name: can_rx_overflow, pos: 15, type: u8}
+      - {name: lora_channel_errors, pos: 16, type: u16, note: "'channel Error' lines from the car module; must stay 0"}
+      - {name: lora_power_on, pos: 18, type: u16, note: "'Power on' lines from the car module"}
+      - {name: cmd_bad, pos: 20, type: u16, note: "command candidates with bad CRC or bad key"}
+      - {name: cmd_executed, pos: 22, type: u16}
+      - {name: nmax, pos: 24, type: i16, can: {id: 0x181, reg: 0xC8, bytes: B1-2, order: le}, note: "speed scaling"}
+      - {name: ramp, pos: 26, type: i16, can: {id: 0x181, reg: 0x25, bytes: B1-2, order: le}}
+      - {name: i_max, pos: 28, type: i16, can: {id: 0x181, reg: 0x4D, bytes: B1-2, order: le}}
+      - {name: i_max_pk, pos: 30, type: i16, can: {id: 0x181, reg: 0xC4, bytes: B1-2, order: le}}
+      - {name: i_con_eff, pos: 32, type: i16, can: {id: 0x181, reg: 0xC5, bytes: B1-2, order: le}}
+      - {name: i_device, pos: 34, type: i16, can: {id: 0x181, reg: 0xC6, bytes: B1-2, order: le}, note: "current scaling"}
+      - {name: i_200pc, pos: 36, type: i16, can: {id: 0x181, reg: 0xD9, bytes: B1-2, order: le}, note: "current scaling"}
+      - {name: reg_seen, pos: 38, type: u16, note: "bit 0 = 0xC8 ... bit 6 = 0xD9 received at least once"}
+      - {name: raw_481, pos: 40, type: u16, can: {id: 0x481, bytes: B0-1, order: raw}, note: "sender unknown; low byte = B0"}
+      - {name: raw_666, pos: 42, type: u16, can: {id: 0x666, bytes: B0-1, order: raw}, note: "sender unknown; low byte = B0"}
+      - {name: raw_321, pos: 44, type: u16, can: {id: 0x321, bytes: B0-1, order: raw}, note: "sender unknown; low byte = B0"}
+      - {name: raw_seen, pos: 46, type: u8, note: "bit 0 = 0x481, bit 1 = 0x666, bit 2 = 0x321 seen in the last 2 s"}
+      - {name: events_dropped, pos: 47, type: u8, note: "saturating"}
+      - {name: capture_dropped, pos: 48, type: u16, note: "diagnostic capture frames dropped (ring full or over the slot's rate), saturating"}
+
+  EVENT:
+    type: 4
+    c_name: event
+    fields:
+      - {name: count, pos: 0, type: u8, note: "0-10"}
+      - name: records
+        pos: 1
+        type: struct
+        count: 10
+        size: 5
+        c_name: event_rec
+        fields:
+          - {name: age_ms, pos: 0, type: u16, note: "packet uptime - event time, saturating at 65535"}
+          - {name: code, pos: 2, type: u8, enum: event_codes}
+          - {name: value, pos: 3, type: u16}
+
+  DIAG_RESP:
+    type: 5
+    c_name: diag_resp
+    fields:
+      - {name: n_acks, pos: 0, type: u8, note: "0-3"}
+      - name: acks
+        pos: 1
+        type: struct
+        count: 3
+        size: 2
+        c_name: ack
+        fields:
+          - {name: seq, pos: 0, type: u8}
+          - {name: status, pos: 1, type: u8, enum: status_codes}
+      - {name: n_frames, pos: 7, type: u8, note: "0-3"}
+      - name: frames
+        pos: 8
+        type: struct
+        count: 3
+        size: 15
+        c_name: cap_frame
+        fields:
+          - {name: age_ms, pos: 0, type: u16}
+          - {name: id, pos: 2, type: u32, note: "bit 31 = extended"}
+          - {name: dlc, pos: 6, type: u8}
+          - {name: data, pos: 7, type: "u8[8]"}
+      - {name: cap_dropped, pos: 53, type: u8, note: "capture frames dropped since the last DIAG_RESP, saturating"}
+
+command:
+  size: 24
+  c_name: cmd
+  ver_type: 0x18          # version 1, type 8
+  key: [0x5A, 0xC3]       # CMD_KEY 0x5AC3, sent as bytes 5A C3 (not a little-endian u16)
+  crc_off: 22             # CRC over bytes 0..21
+  args_off: 7
+  args_size: 15
+  fields:
+    - {name: sync, pos: 0, type: "u8[2]"}
+    - {name: ver_type, pos: 2, type: u8}
+    - {name: seq, pos: 3, type: u8, note: "PC increments it per new command"}
+    - {name: key, pos: 4, type: "u8[2]"}
+    - {name: code, pos: 6, type: u8, enum: command_codes}
+    - {name: args, pos: 7, type: "u8[15]"}
+    - {name: crc, pos: 22, type: u16}
+  codes:
+    PING:
+      code: 0x01
+      note: "starts or keeps a session"
+      args: []
+    BAMO_READ:
+      code: 0x02
+      note: "sends 3D <reg> <period> on 0x201 (DLC 3)"
+      args:
+        - {name: reg, pos: 0, type: u8}
+        - {name: period, pos: 1, type: u8, note: "0 = once, 20-254 = every N ms, 0xFF = stop"}
+    BAMO_WRITE:
+      code: 0x03
+      note: "sends <reg> <value LE> on 0x201, DLC 3 (2-byte) or 5 (4-byte)"
+      args:
+        - {name: reg, pos: 0, type: u8}
+        - {name: size, pos: 1, type: u8, note: "2 or 4"}
+        - {name: value, pos: 2, type: u32}
+    SEND_FRAME:
+      code: 0x04
+      args:
+        - {name: id, pos: 0, type: u32, note: "bit 31 = extended"}
+        - {name: dlc, pos: 4, type: u8}
+        - {name: data, pos: 5, type: "u8[8]"}
+    CAPTURE_SET:
+      code: 0x05
+      args:
+        - {name: slot, pos: 0, type: u8, note: "0-3"}
+        - {name: id, pos: 1, type: u32, note: "bit 31 = extended"}
+        - {name: mask, pos: 5, type: u32}
+        - {name: rate, pos: 9, type: u8, note: "max frames/s, 1-255"}
+    CAPTURE_CLEAR:
+      code: 0x06
+      args:
+        - {name: slot, pos: 0, type: u8, note: "0xFF = all"}
+    STOP_ALL:
+      code: 0x07
+      args: []
+
+status_codes:
+  0: OK
+  2: REJ_DISABLED      # build doesn't allow it
+  3: REJ_ID            # CAN ID not allowed
+  4: REJ_REGID         # register blocked
+  5: REJ_INV_ENABLED   # inverter may be live
+  6: REJ_RATE
+  7: REJ_LIMIT         # too many repeating reads
+  8: BAD_ARGS
+  10: TX_FAIL          # CAN send failed, e.g. bus-off
+  255: NONE            # FAST ack_status before any command
+
+event_codes:
+  1: {name: DASH_BUTTON, value: "B0-1 of the 0x777 frame"}
+  2: {name: R2D_ON}
+  3: {name: R2D_OFF}
+  4: {name: BSPD_TRIP, note: "0x471 B0 1 -> 0"}
+  5: {name: BSPD_CLEAR, note: "0x471 B0 0 -> 1"}
+  6: {name: BMS_FAULT_MSG_START, note: "0x468 starts arriving"}
+  7: {name: BMS_FAULT_MSG_STOP, note: "0x468 stops arriving (100 ms)"}
+  8: {name: IMD_FAULT_MSG_START, note: "0x469 starts arriving"}
+  9: {name: IMD_FAULT_MSG_STOP, note: "0x469 stops arriving (100 ms)"}
+  10: {name: BMS_FAULT_CHANGED, value: "new fault number (0x588 B0)"}
+  11: {name: INV_ENABLE_CMD, value: "16-bit value of 0x201 B0 = 0x51 (51 00 00 enable, 51 04 00 disable)"}
+  12: {name: BMS_CLEAR_SENT, value: "B0-1 of 0x7E3"}
+  13: {name: BAMO_ERR_CLEAR_SENT, note: "0x201 B0 = 0x8E"}
+  14: {name: SOURCE_TIMEOUT, value: "valid bit number"}
+  15: {name: SOURCE_BACK, value: "valid bit number"}
+  16: {name: CAN_BUS_OFF}
+  17: {name: CAN_ERROR_PASSIVE}
+  18: {name: LORA_POWER_ON, note: "car LoRa module printed Power on"}
+  19: {name: EVENTS_DROPPED, value: "count"}
+
+valid_bits:
+  - {bit: 0, name: bms_301, source: "0x301", timeout_ms: 300}
+  - {bit: 1, name: bms_302, source: "0x302", timeout_ms: 300}
+  - {bit: 2, name: bms_303, source: "0x303", timeout_ms: 300}
+  - {bit: 3, name: therm_380, source: "0x1839F380", timeout_ms: 300}
+  - {bit: 4, name: bamo_speed, source: "0x181 reg 0x30", timeout_ms: 300}
+  - {bit: 5, name: bamo_temps, source: "0x181 reg 0x49 or 0x4A", timeout_ms: 300}
+  - {bit: 6, name: bamo_current, source: "0x181 reg 0x20", timeout_ms: 2000}
+  - {bit: 7, name: bamo_status, source: "0x181 reg 0x40", timeout_ms: 2000}
+  - {bit: 8, name: bamo_dcbus, source: "0x181 reg 0xEB or 0x66", timeout_ms: 2000}
+  - {bit: 9, name: brake1, source: "0x364", timeout_ms: 200}
+  - {bit: 10, name: brake2, source: "0x365", timeout_ms: 200}
+  - {bit: 11, name: torque_req, source: "0x473 (only while driving)", timeout_ms: 500}
+  - {bit: 12, name: torque_cmd, source: "0x201 reg 0x90", timeout_ms: 500}
+  - {bit: 13, name: gevcu_471, source: "0x471 (every 10 ms)", timeout_ms: 100}
+  - {bit: 14, name: bms_588, source: "0x588", timeout_ms: 2000}
+  - {bit: 15, name: therm_hb, source: "0x18EEFF80 (BMS thermistor module heartbeat)", timeout_ms: 1000}
+
+status_bits:
+  - {bit: 0, name: red_light, note: "last 0x470 B0 != 0"}
+  - {bit: 1, name: bspd_ok, note: "last 0x471 B0 == 1"}
+  - {bit: 2, name: bms_fault_msg, note: "0x468 seen in the last 100 ms"}
+  - {bit: 3, name: imd_fault_msg, note: "0x469 seen in the last 100 ms"}
+  - {bit: 4, name: r2d, note: "last 0x475 B0 != 0"}
+  - {bit: 5, name: inv_enabled, note: "last 0x201 B0 = 0x51 had bit 2 of its value clear"}
+  - {bit: 6, name: dash_button, note: "0x777 seen since the previous FAST"}
+  - {bit: 7, name: diag_session, note: "diagnostics session active"}
+  - {bit: 8, name: can_error, note: "CAN error-passive or bus-off"}
+
+build_opt_bits:
+  - {bit: 0, name: allow_writes, note: DIAG_ALLOW_WRITES}
+  - {bit: 1, name: any_id, note: DIAG_ANY_ID}
+
+# Bamocar register names (PC display). blocked: BAMO_WRITE and SEND_FRAME on 0x201 refuse it.
+# read_blocked: BAMO_READ refuses it (the GEVCU's repeating reads).
+bamocar_registers:
+  0x20: {name: I_ACTUAL, note: "actual current (I_IST)"}
+  0x25: {name: RAMP, note: "ramp (DIAG ramp)"}
+  0x30: {name: N_ACTUAL, note: "motor speed", read_blocked: true}
+  0x31: {name: N_SETPOINT, note: "speed setpoint", blocked: true}
+  0x35: {name: ACC_RAMP, note: "acceleration ramp (name from the Bamocar manual; check)"}
+  0x3D: {name: READ_REQUEST, note: "3D <reg> <period>: read request"}
+  0x40: {name: KERN_STATUS, note: "status word; bit 0 used as 'inverter live'"}
+  0x49: {name: T_MOTOR, note: "motor temperature", read_blocked: true}
+  0x4A: {name: T_IGBT, note: "IGBT temperature", read_blocked: true}
+  0x4D: {name: I_MAX, note: "current limit"}
+  0x51: {name: MODE_ENABLE, note: "mode / enable (51 00 00 enable, 51 04 00 disable)", blocked: true}
+  0x66: {name: DC_BUS_ALT, note: "DC bus voltage (alternative register)"}
+  0x68: {name: CAN_RX_ID, note: "CAN receive ID", blocked: true}
+  0x6E: {name: POSITION, note: "position setpoint", blocked: true}
+  0x84: {name: EEPROM_WRITE, note: "writes parameters to EEPROM", blocked: true}
+  0x8E: {name: ERROR_CLEAR, note: "error clear (sent by the GEVCU)"}
+  0x8F: {name: ERRORS, note: "error/warning register; GEVCU sends an error clear when byte 1 = 0x20"}
+  0x90: {name: TORQUE_SETPOINT, note: "torque setpoint", blocked: true}
+  0xC4: {name: I_MAX_PK, note: "peak current"}
+  0xC5: {name: I_CON_EFF, note: "continuous current"}
+  0xC6: {name: I_DEVICE, note: "device current (scaling)"}
+  0xC8: {name: N_MAX, note: "max speed (speed scaling)"}
+  0xD9: {name: I_200PC, note: "200% current (scaling)"}
+  0xDC: {name: CONFIG, note: "configuration; bit 15 switches the inverter to CANopen", blocked: true}
+  0xEB: {name: DC_BUS, note: "DC bus voltage"}

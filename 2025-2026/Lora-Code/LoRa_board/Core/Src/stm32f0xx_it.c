@@ -22,6 +22,7 @@
 #include "stm32f0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "board.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +57,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan;
-extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -142,14 +142,28 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 channel 4 and 5 interrupts.
+  */
+void DMA1_Channel4_5_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel4_5_IRQn 0 */
+  /* USART2 TX completion is polled (board_tx_busy); no channel interrupt flags are enabled. */
+  LL_DMA_ClearFlag_GI4(DMA1);
+  /* USER CODE END DMA1_Channel4_5_IRQn 0 */
+
+  /* USER CODE BEGIN DMA1_Channel4_5_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel4_5_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART2 global interrupt.
   */
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-
+  board_usart2_irq();
   /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */

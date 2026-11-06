@@ -29,6 +29,11 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
+#include "stm32f0xx_ll_dma.h"
+#include "stm32f0xx_ll_usart.h"
+#include "stm32f0xx_ll_bus.h"
+#include "stm32f0xx_ll_gpio.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 

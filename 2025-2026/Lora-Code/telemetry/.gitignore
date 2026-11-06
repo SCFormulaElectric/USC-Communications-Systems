@@ -1,0 +1,5 @@
+tests/host/build/
+tools/build/
+pc/logs/
+__pycache__/
+.pytest_cache/

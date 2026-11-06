@@ -1,0 +1,5 @@
+pyserial>=3.5
+PyYAML>=6.0
+pytest>=7.0
+# host C tests only (a C compiler for telemetry/tests/host); not needed if gcc/clang is installed
+ziglang>=0.11
