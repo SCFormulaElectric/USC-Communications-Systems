@@ -103,7 +103,8 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   board_uart_start();
-  board_can_start();
+  int can_ok = board_can_start();     /* a failure must not stop telemetry: retried below */
+  uint32_t can_retry = HAL_GetTick();
   telem_init(HAL_GetTick());          /* first write 1 s from now */
 #if TELEM_BAMO_DIAG
   diag_init(board_can_send);
@@ -124,6 +125,11 @@ int main(void)
     uint32_t now = HAL_GetTick();
     can_frame_t f;
     uint8_t b, tec, rec, ep, boff;
+
+    if (!can_ok && now - can_retry >= 1000u) {
+      can_retry = now;
+      can_ok = board_can_start();
+    }
 
     while (board_can_pop(&f)) {
       telem_on_can(&f);
@@ -227,12 +233,7 @@ static void MX_CAN_Init(void)
   }
   /* USER CODE BEGIN CAN_Init 2 */
   /* Still in initialization mode here, so BTR/MCR can be changed per build flag. */
-#if TELEM_BAMO_DIAG == 0
-  hcan.Instance->BTR |= CAN_BTR_SILM;      /* silent: the controller can't transmit (no ACK, no error frames) */
-#else
-  hcan.Instance->MCR |= CAN_MCR_ABOM;      /* recover from bus-off by itself */
-  hcan.Instance->MCR &= ~CAN_MCR_NART;     /* retransmit diagnostic frames after lost arbitration */
-#endif
+  board_can_apply_mode();
   /* USER CODE END CAN_Init 2 */
 
 }

@@ -37,12 +37,12 @@ brief, so it isn't applied.
 
 | Build | text | data | bss | Flash used | RAM (static + 0x200 heap + 0x400 stack) |
 |---|---|---|---|---|---|
-| Telemetry (flag 0) | 10728 | 12 | 3236 | **10,740 / 16,384 B (65.6%)** | 4,784 / 6,144 B |
-| Diag (flag 1) | 13104 | 12 | 3700 | **13,116 / 16,384 B (80.1%)** | 5,248 / 6,144 B |
-| Diag-first (flag 2) | 13036 | 12 | 3700 | 13,048 B (79.6%) | 5,248 B |
+| Telemetry (flag 0) | 10820 | 12 | 3236 | **10,832 / 16,384 B (66.1%)** | 4,784 / 6,144 B |
+| Diag (flag 1) | 13200 | 12 | 3700 | **13,212 / 16,384 B (80.6%)** | 5,248 / 6,144 B |
+| Diag-first (flag 2) | 13132 | 12 | 3700 | 13,144 B (80.2%) | 5,248 B |
 
-- CubeIDE's own headless build of `Telemetry` and `Diag` gives the same numbers: 0 errors,
-  0 warnings.
+- Sizes include the CAN-start retry (see below). Before it, CubeIDE's own headless build of
+  `Telemetry` and `Diag` matched `build_fw.py` exactly, with 0 errors and 0 warnings.
 - The binaries contain no `printf`, floating point or `malloc`.
 
 ## 3. Test results
@@ -120,14 +120,17 @@ Changes made to fit or to work:
    (12,096 B, telemetry only).
    - Use `Telemetry` or `Diag` for the car.
    - The old committed `Debug/` output in git is stale; I didn't touch it.
-4. **CAN controller settings, from `USER CODE` in `MX_CAN_Init`:**
+4. **CAN start can't stop telemetry.** Starting the CAN controller needs the bus idle on CAN RX
+   (it fails while the transceiver is unpowered or the bus is held dominant). A failure doesn't
+   stop the board: telemetry keeps running and `main.c` retries every second.
+5. **CAN controller settings, from `USER CODE` in `MX_CAN_Init`:**
    - Flag 0: silent mode (`BTR.SILM`).
    - Diag builds: automatic bus-off recovery on, and automatic retransmission **on**. The `.ioc`
      had it off, which drops a diagnostic frame that loses arbitration on a busy bus.
 
 Interpretations where the brief was silent:
 
-5. **Event edges:**
+6. **Event edges:**
    - R2D and BSPD events fire only on transitions after the first frame (no event for the
      state at boot).
    - A BMS fault number other than 0 on the first frame counts as a change.
@@ -135,10 +138,10 @@ Interpretations where the brief was silent:
      present source.
    - Code 11 (inverter enable/disable command) fires when the 16-bit value changes, not on every
      frame, in case the GEVCU repeats it.
-6. **Byte orders the brief doesn't give:**
+7. **Byte orders the brief doesn't give:**
    - 0x777 and 0x7E3 event values and the 0x481/0x666/0x321 raw fields are taken low byte = B0.
    - The command key goes on air as bytes `5A C3`, not as a little-endian u16.
-7. **Diagnostics details:**
+8. **Diagnostics details:**
    - Check order: arguments → build allows → CAN ID → blocked register → inverter live →
      read limit → rate → send.
    - A BAMO_WRITE to register 0x3D (the read request) is BAD_ARGS, so it can't bypass the read
@@ -148,13 +151,13 @@ Interpretations where the brief was silent:
    - Stop frames sent at session end and by STOP_ALL are not rate-limited.
    - Frames over a capture slot's rate count as capture drops.
    - "Commands executed" counts commands with a new sequence number, whatever their status.
-8. **Telemetry details:**
+9. **Telemetry details:**
    - Packet sequence numbers are assigned when a packet goes into a write, so a refused write
      doesn't create a gap. The uptime stays the build time.
    - Missed write deadlines are skipped, not caught up.
    - `CAN frames received in the last 100 ms` uses a fixed 100 ms window, so flag 2 reports the
      same thing.
-9. **PC side:**
+10. **PC side:**
    - The tool starts its command numbering after the car's last acknowledged sequence. A
      restarted PC tool could otherwise reuse the car's last number, and the car would treat it
      as a repeat.

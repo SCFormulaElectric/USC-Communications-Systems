@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include "telem_core.h"
 
-void board_can_start(void);                 /* filter (accept all, FIFO0), notifications, start */
+void board_can_apply_mode(void);            /* silent (flag 0) / auto bus-off + retransmit (diag) */
+int board_can_start(void);                  /* filter, notifications, start; 1 = running, 0 = retry later */
 int board_can_pop(can_frame_t *f);          /* 1 = a received frame was copied out of the ring */
 uint8_t board_can_take_overflows(void);     /* receive-ring and FIFO overruns since the last call */
 void board_can_state(uint8_t *tec, uint8_t *rec, uint8_t *error_passive, uint8_t *bus_off);

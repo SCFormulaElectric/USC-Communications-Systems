@@ -42,9 +42,27 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *h)
     HAL_CAN_ResetError(h);
 }
 
-void board_can_start(void)
+/* Per build flag; only while the controller is in initialization mode. */
+void board_can_apply_mode(void)
+{
+#if TELEM_BAMO_DIAG == 0
+    hcan.Instance->BTR |= CAN_BTR_SILM;      /* silent: the controller can't transmit (no ACK, no error frames) */
+#else
+    hcan.Instance->MCR |= CAN_MCR_ABOM;      /* recover from bus-off by itself */
+    hcan.Instance->MCR &= ~CAN_MCR_NART;     /* retransmit diagnostic frames after lost arbitration */
+#endif
+}
+
+/* Returns 1 when CAN is running. Never stops the board: leaving initialization mode needs 11
+ * recessive bits on CAN RX, which fails while the transceiver is unpowered or the bus is held
+ * dominant. main.c retries every second; telemetry keeps running meanwhile. */
+int board_can_start(void)
 {
     CAN_FilterTypeDef fc;
+    if (HAL_CAN_GetState(&hcan) != HAL_CAN_STATE_READY) {    /* a previous start failed */
+        if (HAL_CAN_Init(&hcan) != HAL_OK) return 0;
+        board_can_apply_mode();
+    }
     memset(&fc, 0, sizeof fc);
     fc.FilterBank = 0;
     fc.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -54,10 +72,11 @@ void board_can_start(void)
     fc.FilterFIFOAssignment = CAN_FILTER_FIFO0;
     fc.FilterActivation = ENABLE;
     fc.SlaveStartFilterBank = 14;
-    if (HAL_CAN_ConfigFilter(&hcan, &fc) != HAL_OK) Error_Handler();
-    if (HAL_CAN_Start(&hcan) != HAL_OK) Error_Handler();
+    if (HAL_CAN_ConfigFilter(&hcan, &fc) != HAL_OK) return 0;
+    if (HAL_CAN_Start(&hcan) != HAL_OK) return 0;
     if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO0_OVERRUN) != HAL_OK)
-        Error_Handler();
+        return 0;
+    return 1;
 }
 
 int board_can_pop(can_frame_t *f)
