@@ -1,0 +1,19 @@
+sent 3600 packets, 3 writes started >5 ms after their slot
+raw log: C:\Git\USC-Communications-Systems\2025-2026\Lora-Code\tools\lora_framing_test\logs\t3_raw.csv
+T3 production pattern (3600 packets over 299.9 s)
+  received_good_crc: 676
+  bad_crc_candidates: 596
+  lost: 2924
+  lost_by_seq_gaps: 2923
+  duplicates: 0
+  good_crc_not_sent: 0
+  rx_bytes: 55484
+  bytes_skipped_resync: 12220
+  arrival_group_sizes: {164: 1, 84: 166, 83: 236, 87: 8, 79: 4, 76: 2, 85: 32, 82: 52, 93: 1, 131: 12, 81: 10, 64: 3, 125: 1, 69: 1, 77: 3, 86: 9, 80: 4, 92: 5, 68: 3, 90: 1, 78: 2, 91: 3, 98: 1, 65: 1, 107: 1, 109: 1, 198: 2, 100: 2, 103: 1, 96: 1, 74: 2, 186: 1, 89: 3, 154: 16, 155: 21, 156: 4, 153: 1}
+  groups_not_64: 614
+  latency_ms: {'p50': 165.06, 'p95': 208.82, 'max': 237.2, 'min': 57.89}
+  write_spacing_ms: {'min': 43.97, 'p50': 99.99}
+  lost_by_slot: {2: 295, 4: 54, 6: 272, 10: 277, 11: 271, 12: 293, 14: 54, 16: 277, 0: 277, 1: 273, 8: 290, 18: 291}
+  first odd groups (t, size): [(0.721, 164), (1.07, 84), (1.571, 84), (1.97, 83), (2.47, 83), (2.973, 87), (3.367, 79), (3.87, 83), (4.37, 84), (4.87, 83), (5.37, 84), (5.87, 84), (6.365, 76), (6.872, 85), (7.369, 82), (7.87, 83), (8.369, 82), (8.871, 84), (9.372, 85), (9.877, 93)]
+  lost seqs (first 50): [2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 29, 30, 31, 32, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 52, 53, 54, 55, 56, 58, 59, 60, 61]
+  TX port output: 'channel Error:133\r\nchannel Error:150\r\nchannel Error:173\r\nchannel Error:245\r\nchannel Error:179\r\nchannel Error:184\r\nchannel Error:122\r\nchannel Error:234\r\nchannel Error:91\r\nchannel Error:82\r\nchannel Erro'

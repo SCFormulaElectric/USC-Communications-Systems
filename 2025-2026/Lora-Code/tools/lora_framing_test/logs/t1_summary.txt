@@ -1,0 +1,68 @@
+T1 single writes (arrival-group gap 10.0 ms; latency from estimated UART wire end)
+  read-to-read gaps inside 64 B arrivals: n=5 max=3.57 ms p95=3.57 ms p50=3.03 ms
+  size rep  groups(B)            total  latency first/last ms   match
+     8   0  [8]                      8    119.18/119.18        exact
+     8   1  [8]                      8    118.99/118.99        exact
+     8   2  [8]                      8     119.4/119.4         exact
+     8   3  [8]                      8    119.13/119.13        exact
+     8   4  [8]                      8    119.06/119.06        exact
+    32   0  [32]                    32    132.67/132.67        exact
+    32   1  [32]                    32    132.35/132.35        exact
+    32   2  [32]                    32    132.61/132.61        exact
+    32   3  [32]                    32    132.09/132.09        exact
+    32   4  [32]                    32    132.93/132.93        exact
+    64   0  [64]                    64     149.5/153.07        exact
+    64   1  [64]                    64    150.18/153.17        exact
+    64   2  [64]                    64    149.73/152.69        exact
+    64   3  [64]                    64    149.49/152.53        exact
+    64   4  [64]                    64    149.38/152.4         exact
+   100   0  [100]                  100    171.19/177.78        exact
+   100   1  [100]                  100    170.16/177.43        exact
+   100   2  [100]                  100     169.9/177.48        exact
+   100   3  [100]                  100    169.61/177.26        exact
+   100   4  [100]                  100    170.43/177.22        exact
+   128   0  [128]                  128    184.81/193.37        exact
+   128   1  [128]                  128    184.68/193.03        exact
+   128   2  [128]                  128     184.6/193.33        exact
+   128   3  [128]                  128    185.32/193.27        exact
+   128   4  [128]                  128    184.67/194.09        exact
+   200   0  [200]                  200    223.81/240.01        exact
+   200   1  [200]                  200    223.97/239.98        exact
+   200   2  [200]                  200    223.63/240.02        exact
+   200   3  [200]                  200    223.87/240.07        exact
+   200   4  [200]                  200    223.92/239.89        exact
+   239   0  [239]                  239    243.99/263.27        exact
+   239   1  [239]                  239    243.68/263.43        exact
+   239   2  [239]                  239    243.62/263.78        exact
+   239   3  [239]                  239    243.59/263.76        exact
+   239   4  [239]                  239    243.79/263.75        exact
+   240   0  [240]                  240    245.18/265.56        exact
+   240   1  [240]                  240    245.79/265.07        exact
+   240   2  [240]                  240     245.0/265.42        exact
+   240   3  [240]                  240    244.95/265.22        exact
+   240   4  [240]                  240    245.36/264.99        exact
+   241   0  [241]                  241     245.2/265.29        exact
+   241   1  [241]                  241    245.62/264.94        exact
+   241   2  [241]                  241    245.56/264.82        exact
+   241   3  [241]                  241    245.03/265.74        exact
+   241   4  [241]                  241    244.97/265.42        exact
+   255   0  [247]                  247    166.16/186.92        truncated: first 247 of 255 B  TX-echo='channel Error:66\r\n'
+   255   1  [247]                  247    166.04/186.65        truncated: first 247 of 255 B  TX-echo='channel Error:97\r\n'
+   255   2  [247]                  247    165.97/187.11        truncated: first 247 of 255 B  TX-echo='channel Error:128\r\n'
+   255   3  [247]                  247    165.97/186.49        truncated: first 247 of 255 B  TX-echo='channel Error:159\r\n'
+   255   4  [247]                  247    166.09/187.04        truncated: first 247 of 255 B  TX-echo='channel Error:190\r\n'
+   256   0  [247]                  247    166.09/186.84        truncated: first 247 of 256 B  TX-echo='channel Error:221\r\n'
+   256   1  [247]                  247    166.09/187.06        truncated: first 247 of 256 B  TX-echo='channel Error:252\r\n'
+   256   2  [247]                  247    165.92/186.47        truncated: first 247 of 256 B
+   256   3  [247]                  247    166.21/186.6         truncated: first 247 of 256 B  TX-echo='channel Error:58\r\n'
+   256   4  [247]                  247    166.12/186.64        truncated: first 247 of 256 B  TX-echo='channel Error:89\r\n'
+   300   0  [247]                  247    162.49/183.18        truncated: first 247 of 300 B  TX-echo='channel Error:120\r\n'
+   300   1  [247]                  247    162.61/183.03        truncated: first 247 of 300 B  TX-echo='channel Error:151\r\n'
+   300   2  [247]                  247    162.19/182.91        truncated: first 247 of 300 B  TX-echo='channel Error:182\r\n'
+   300   3  [247]                  247    162.47/182.99        truncated: first 247 of 300 B  TX-echo='channel Error:213\r\n'
+   300   4  [247]                  247     162.4/183.11        truncated: first 247 of 300 B  TX-echo='channel Error:244\r\n'
+   512   0  [247]                  247    144.03/164.64        truncated: first 247 of 512 B
+   512   1  [247]                  247    144.15/165.35        truncated: first 247 of 512 B  TX-echo='channel Error:50\r\nchannel Error:35\r\n'
+   512   2  [247]                  247    143.95/164.39        truncated: first 247 of 512 B  TX-echo='channel Error:81\r\nchannel Error:66\r\n'
+   512   3  [247]                  247    144.28/164.38        truncated: first 247 of 512 B  TX-echo='channel Error:112\r\nchannel Error:104\r\n'
+   512   4  [247]                  247    144.45/165.07        truncated: first 247 of 512 B  TX-echo='channel Error:143\r\nchannel Error:135\r\n'

@@ -1,0 +1,102 @@
+{
+ "configs": [
+  {
+   "k": 1,
+   "period_ms": 100,
+   "pkts_per_s": 10.0,
+   "sent": 200,
+   "ok": 40,
+   "loss_pct": 80.0,
+   "lat_p50_ms": 164.67,
+   "lat_p95_ms": 164.86,
+   "lat_max_ms": 166.24,
+   "channel_errors": 111
+  },
+  {
+   "k": 1,
+   "period_ms": 120,
+   "pkts_per_s": 8.33,
+   "sent": 166,
+   "ok": 166,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 152.14,
+   "lat_p95_ms": 152.36,
+   "lat_max_ms": 152.79,
+   "channel_errors": 0
+  },
+  {
+   "k": 1,
+   "period_ms": 150,
+   "pkts_per_s": 6.67,
+   "sent": 133,
+   "ok": 133,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 152.16,
+   "lat_p95_ms": 152.37,
+   "lat_max_ms": 152.76,
+   "channel_errors": 0
+  },
+  {
+   "k": 1,
+   "period_ms": 200,
+   "pkts_per_s": 5.0,
+   "sent": 100,
+   "ok": 100,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 152.15,
+   "lat_p95_ms": 152.34,
+   "lat_max_ms": 152.66,
+   "channel_errors": 0
+  },
+  {
+   "k": 1,
+   "period_ms": 250,
+   "pkts_per_s": 4.0,
+   "sent": 80,
+   "ok": 80,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 152.15,
+   "lat_p95_ms": 152.33,
+   "lat_max_ms": 152.46,
+   "channel_errors": 0
+  },
+  {
+   "k": 3,
+   "period_ms": 250,
+   "pkts_per_s": 12.0,
+   "sent": 240,
+   "ok": 240,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 226.6,
+   "lat_p95_ms": 232.47,
+   "lat_max_ms": 249.34,
+   "channel_errors": 0
+  },
+  {
+   "k": 3,
+   "period_ms": 300,
+   "pkts_per_s": 10.0,
+   "sent": 198,
+   "ok": 198,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 226.52,
+   "lat_p95_ms": 232.36,
+   "lat_max_ms": 232.6,
+   "channel_errors": 0
+  },
+  {
+   "k": 3,
+   "period_ms": 400,
+   "pkts_per_s": 7.5,
+   "sent": 150,
+   "ok": 150,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 226.56,
+   "lat_p95_ms": 232.44,
+   "lat_max_ms": 233.65,
+   "channel_errors": 0
+  }
+ ],
+ "bad_crc_candidates": 40,
+ "bytes_skipped": 752
+}

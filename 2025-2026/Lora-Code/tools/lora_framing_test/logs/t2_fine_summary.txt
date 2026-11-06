@@ -1,0 +1,19 @@
+T2 pairs (arrival-group gap 10.0 ms; latency from wire end of 2nd write)
+  pause  n  1grp 2grp other  bytes-rcvd(set)       exact  lat p50 ms  group-size patterns
+   82.0  10   10    0     0  [64]                     10       70.49  {'[64]': 10}
+   86.0  10   10    0     0  [64]                     10       66.53  {'[64]': 10}
+   90.0  10   10    0     0  [64]                     10       62.44  {'[64]': 10}
+   94.0  10   10    0     0  [64]                     10       58.29  {'[64]': 10}
+   98.0  10   10    0     0  [32, 34, 35, 36, 37, 48]      0       34.08  {'[35]': 1, '[36]': 2, '[48]': 1, '[32]': 3, '[34]': 2, '[37]': 1}
+  non-exact pairs:
+    pause 98.0 rep 0: groups [35] truncated: first 35 of 64 B
+    pause 98.0 rep 1: groups [36] truncated: first 36 of 64 B
+    pause 98.0 rep 2: groups [48] truncated: first 48 of 64 B
+    pause 98.0 rep 3: groups [36] truncated: first 36 of 64 B
+    pause 98.0 rep 4: groups [32] truncated: first 32 of 64 B
+    pause 98.0 rep 5: groups [34] truncated: first 34 of 64 B
+    pause 98.0 rep 6: groups [37] truncated: first 37 of 64 B
+    pause 98.0 rep 7: groups [32] truncated: first 32 of 64 B
+    pause 98.0 rep 8: groups [32] truncated: first 32 of 64 B
+    pause 98.0 rep 9: groups [34] truncated: first 34 of 64 B
+  TX-port output during test: ['channel Error:186\r\n', 'channel Error:248\r\n', 'channel Error:138\r\n', 'channel Error:116\r\n', 'channel Error:150\r\n']

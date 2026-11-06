@@ -1,0 +1,11 @@
+T6 '+++' inside packet data
+  plus3_mid      rep 0: groups [64] exact  TX=''
+  plus3_mid      rep 1: groups [64] exact  TX=''
+  plus3_mid      rep 2: groups [64] exact  TX=''
+  plus3crlf_mid  rep 0: groups [64] exact  TX=''
+  plus3crlf_mid  rep 1: groups [64] exact  TX=''
+  plus3crlf_mid  rep 2: groups [64] exact  TX=''
+  plus3_end      rep 0: groups [64] exact  TX=''
+  plus3_end      rep 1: groups [64] exact  TX=''
+  plus3_end      rep 2: groups [64] exact  TX=''
+  post-test TX state: TX was still in data mode after the test (+++ -> Entry AT; toggled back)

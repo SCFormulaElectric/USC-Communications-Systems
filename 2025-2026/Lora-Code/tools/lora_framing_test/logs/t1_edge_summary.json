@@ -1,0 +1,606 @@
+{
+ "gap_ms": 10.0,
+ "gaps64_ms": [],
+ "rows": [
+  {
+   "size": 242,
+   "rep": 0,
+   "uart_write_bytes": 245,
+   "groups": [
+    242
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    244.83
+   ],
+   "group_end_ms": [
+    264.83
+   ],
+   "rx_total": 242,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 264.83,
+   "latency_first_ms": 244.83,
+   "tx_echo": ""
+  },
+  {
+   "size": 242,
+   "rep": 1,
+   "uart_write_bytes": 245,
+   "groups": [
+    242
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    245.73
+   ],
+   "group_end_ms": [
+    265.82
+   ],
+   "rx_total": 242,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 265.82,
+   "latency_first_ms": 245.73,
+   "tx_echo": ""
+  },
+  {
+   "size": 242,
+   "rep": 2,
+   "uart_write_bytes": 245,
+   "groups": [
+    242
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    245.44
+   ],
+   "group_end_ms": [
+    265.01
+   ],
+   "rx_total": 242,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 265.01,
+   "latency_first_ms": 245.44,
+   "tx_echo": ""
+  },
+  {
+   "size": 244,
+   "rep": 0,
+   "uart_write_bytes": 247,
+   "groups": [
+    244
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    246.36
+   ],
+   "group_end_ms": [
+    267.02
+   ],
+   "rx_total": 244,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 267.02,
+   "latency_first_ms": 246.36,
+   "tx_echo": ""
+  },
+  {
+   "size": 244,
+   "rep": 1,
+   "uart_write_bytes": 247,
+   "groups": [
+    244
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    246.31
+   ],
+   "group_end_ms": [
+    266.65
+   ],
+   "rx_total": 244,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 266.65,
+   "latency_first_ms": 246.31,
+   "tx_echo": ""
+  },
+  {
+   "size": 244,
+   "rep": 2,
+   "uart_write_bytes": 247,
+   "groups": [
+    244
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    246.63
+   ],
+   "group_end_ms": [
+    266.95
+   ],
+   "rx_total": 244,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 266.95,
+   "latency_first_ms": 246.63,
+   "tx_echo": ""
+  },
+  {
+   "size": 245,
+   "rep": 0,
+   "uart_write_bytes": 248,
+   "groups": [
+    245
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    247.72
+   ],
+   "group_end_ms": [
+    268.45
+   ],
+   "rx_total": 245,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 268.45,
+   "latency_first_ms": 247.72,
+   "tx_echo": ""
+  },
+  {
+   "size": 245,
+   "rep": 1,
+   "uart_write_bytes": 248,
+   "groups": [
+    245
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    247.94
+   ],
+   "group_end_ms": [
+    268.17
+   ],
+   "rx_total": 245,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 268.17,
+   "latency_first_ms": 247.94,
+   "tx_echo": ""
+  },
+  {
+   "size": 245,
+   "rep": 2,
+   "uart_write_bytes": 248,
+   "groups": [
+    245
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    248.08
+   ],
+   "group_end_ms": [
+    268.98
+   ],
+   "rx_total": 245,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 268.98,
+   "latency_first_ms": 248.08,
+   "tx_echo": ""
+  },
+  {
+   "size": 246,
+   "rep": 0,
+   "uart_write_bytes": 249,
+   "groups": [
+    246
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    247.81
+   ],
+   "group_end_ms": [
+    268.56
+   ],
+   "rx_total": 246,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 268.56,
+   "latency_first_ms": 247.81,
+   "tx_echo": ""
+  },
+  {
+   "size": 246,
+   "rep": 1,
+   "uart_write_bytes": 249,
+   "groups": [
+    246
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    252.42
+   ],
+   "group_end_ms": [
+    272.67
+   ],
+   "rx_total": 246,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 272.67,
+   "latency_first_ms": 252.42,
+   "tx_echo": ""
+  },
+  {
+   "size": 246,
+   "rep": 2,
+   "uart_write_bytes": 249,
+   "groups": [
+    246
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    247.8
+   ],
+   "group_end_ms": [
+    268.21
+   ],
+   "rx_total": 246,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 268.21,
+   "latency_first_ms": 247.8,
+   "tx_echo": ""
+  },
+  {
+   "size": 247,
+   "rep": 0,
+   "uart_write_bytes": 250,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.13
+   ],
+   "group_end_ms": [
+    189.09
+   ],
+   "rx_total": 247,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 189.09,
+   "latency_first_ms": 167.13,
+   "tx_echo": ""
+  },
+  {
+   "size": 247,
+   "rep": 1,
+   "uart_write_bytes": 250,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.1
+   ],
+   "group_end_ms": [
+    188.01
+   ],
+   "rx_total": 247,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 188.01,
+   "latency_first_ms": 167.1,
+   "tx_echo": ""
+  },
+  {
+   "size": 247,
+   "rep": 2,
+   "uart_write_bytes": 250,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.76
+   ],
+   "group_end_ms": [
+    187.08
+   ],
+   "rx_total": 247,
+   "match": "exact",
+   "group_match": [
+    "exact"
+   ],
+   "latency_last_ms": 187.08,
+   "latency_first_ms": 166.76,
+   "tx_echo": ""
+  },
+  {
+   "size": 248,
+   "rep": 0,
+   "uart_write_bytes": 251,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.99
+   ],
+   "group_end_ms": [
+    187.19
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 248 B",
+   "group_match": [
+    "truncated: first 247 of 248 B"
+   ],
+   "latency_last_ms": 187.19,
+   "latency_first_ms": 166.99,
+   "tx_echo": ""
+  },
+  {
+   "size": 248,
+   "rep": 1,
+   "uart_write_bytes": 251,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.9
+   ],
+   "group_end_ms": [
+    188.29
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 248 B",
+   "group_match": [
+    "truncated: first 247 of 248 B"
+   ],
+   "latency_last_ms": 188.29,
+   "latency_first_ms": 166.9,
+   "tx_echo": ""
+  },
+  {
+   "size": 248,
+   "rep": 2,
+   "uart_write_bytes": 251,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.62
+   ],
+   "group_end_ms": [
+    187.6
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 248 B",
+   "group_match": [
+    "truncated: first 247 of 248 B"
+   ],
+   "latency_last_ms": 187.6,
+   "latency_first_ms": 166.62,
+   "tx_echo": ""
+  },
+  {
+   "size": 249,
+   "rep": 0,
+   "uart_write_bytes": 252,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.12
+   ],
+   "group_end_ms": [
+    187.54
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 249 B",
+   "group_match": [
+    "truncated: first 247 of 249 B"
+   ],
+   "latency_last_ms": 187.54,
+   "latency_first_ms": 167.12,
+   "tx_echo": ""
+  },
+  {
+   "size": 249,
+   "rep": 1,
+   "uart_write_bytes": 252,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.57
+   ],
+   "group_end_ms": [
+    187.7
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 249 B",
+   "group_match": [
+    "truncated: first 247 of 249 B"
+   ],
+   "latency_last_ms": 187.7,
+   "latency_first_ms": 167.57,
+   "tx_echo": ""
+  },
+  {
+   "size": 249,
+   "rep": 2,
+   "uart_write_bytes": 252,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.11
+   ],
+   "group_end_ms": [
+    187.25
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 249 B",
+   "group_match": [
+    "truncated: first 247 of 249 B"
+   ],
+   "latency_last_ms": 187.25,
+   "latency_first_ms": 167.11,
+   "tx_echo": ""
+  },
+  {
+   "size": 250,
+   "rep": 0,
+   "uart_write_bytes": 253,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    167.25
+   ],
+   "group_end_ms": [
+    186.95
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 250 B",
+   "group_match": [
+    "truncated: first 247 of 250 B"
+   ],
+   "latency_last_ms": 186.95,
+   "latency_first_ms": 167.25,
+   "tx_echo": "channel Error:90\r\n"
+  },
+  {
+   "size": 250,
+   "rep": 1,
+   "uart_write_bytes": 253,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.58
+   ],
+   "group_end_ms": [
+    187.48
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 250 B",
+   "group_match": [
+    "truncated: first 247 of 250 B"
+   ],
+   "latency_last_ms": 187.48,
+   "latency_first_ms": 166.58,
+   "tx_echo": "channel Error:121\r\n"
+  },
+  {
+   "size": 250,
+   "rep": 2,
+   "uart_write_bytes": 253,
+   "groups": [
+    247
+   ],
+   "group_reads": [
+    8
+   ],
+   "group_start_ms": [
+    166.59
+   ],
+   "group_end_ms": [
+    187.53
+   ],
+   "rx_total": 247,
+   "match": "truncated: first 247 of 250 B",
+   "group_match": [
+    "truncated: first 247 of 250 B"
+   ],
+   "latency_last_ms": 187.53,
+   "latency_first_ms": 166.59,
+   "tx_echo": "channel Error:152\r\n"
+  }
+ ]
+}

@@ -1,0 +1,94 @@
+{
+ "rows": [
+  {
+   "rep": 0,
+   "groups": [
+    48
+   ],
+   "group_t_ms_from_first_write": [
+    148.53
+   ],
+   "write_spans": [
+    [
+     0,
+     5
+    ]
+   ],
+   "rx_total": 48,
+   "match": "truncated: first 48 of 120 B",
+   "tx_echo": "channel Error:94\r\nchannel Error:174\r\n"
+  },
+  {
+   "rep": 1,
+   "groups": [
+    48
+   ],
+   "group_t_ms_from_first_write": [
+    148.21
+   ],
+   "write_spans": [
+    [
+     0,
+     5
+    ]
+   ],
+   "rx_total": 48,
+   "match": "truncated: first 48 of 120 B",
+   "tx_echo": "channel Error:125\r\nchannel Error:205\r\n"
+  },
+  {
+   "rep": 2,
+   "groups": [
+    48
+   ],
+   "group_t_ms_from_first_write": [
+    148.67
+   ],
+   "write_spans": [
+    [
+     0,
+     5
+    ]
+   ],
+   "rx_total": 48,
+   "match": "truncated: first 48 of 120 B",
+   "tx_echo": "channel Error:156\r\nchannel Error:236\r\n"
+  },
+  {
+   "rep": 3,
+   "groups": [
+    48
+   ],
+   "group_t_ms_from_first_write": [
+    148.48
+   ],
+   "write_spans": [
+    [
+     0,
+     5
+    ]
+   ],
+   "rx_total": 48,
+   "match": "truncated: first 48 of 120 B",
+   "tx_echo": "channel Error:187\r\n"
+  },
+  {
+   "rep": 4,
+   "groups": [
+    48
+   ],
+   "group_t_ms_from_first_write": [
+    148.81
+   ],
+   "write_spans": [
+    [
+     0,
+     5
+    ]
+   ],
+   "rx_total": 48,
+   "match": "truncated: first 48 of 120 B",
+   "tx_echo": "channel Error:218\r\nchannel Error:42\r\n"
+  }
+ ]
+}

@@ -1,0 +1,3 @@
+t0: anything printed by either port
+  TX: 0 reads, 0 bytes
+  RX: 0 reads, 0 bytes

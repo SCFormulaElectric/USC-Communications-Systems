@@ -1,0 +1,51 @@
+T2 pairs (arrival-group gap 10.0 ms; latency from wire end of 2nd write)
+  pause  n  1grp 2grp other  bytes-rcvd(set)       exact  lat p50 ms  group-size patterns
+    0.0  10   10    0     0  [64]                     10      152.42  {'[64]': 10}
+    0.5  10   10    0     0  [64]                     10      151.91  {'[64]': 10}
+    1.0  10   10    0     0  [64]                     10      151.54  {'[64]': 10}
+    2.0  10   10    0     0  [64]                     10      150.95  {'[64]': 10}
+    3.0  10   10    0     0  [64]                     10      150.07  {'[64]': 10}
+    5.0  10   10    0     0  [64]                     10      147.48  {'[64]': 10}
+    8.0  10   10    0     0  [64]                     10      145.08  {'[64]': 10}
+   10.0  10   10    0     0  [64]                     10      141.34  {'[64]': 10}
+   15.0  10   10    0     0  [64]                     10      137.72  {'[64]': 10}
+   20.0  10   10    0     0  [64]                     10      132.32  {'[64]': 10}
+   30.0  10   10    0     0  [64]                     10      122.49  {'[64]': 10}
+   50.0  10   10    0     0  [64]                     10       102.3  {'[64]': 10}
+   60.0  10   10    0     0  [64]                     10       92.35  {'[64]': 10}
+   80.0  10   10    0     0  [64]                     10       72.29  {'[64]': 10}
+  100.0  10   10    0     0  [32]                      0       29.47  {'[32]': 10}
+  150.0  10   10    0     0  [32]                      0      -20.79  {'[32]': 10}
+  200.0  10   10    0     0  [32]                      0      -70.44  {'[32]': 10}
+  non-exact pairs:
+    pause 100.0 rep 0: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 1: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 2: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 3: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 4: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 5: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 6: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 7: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 8: groups [32] truncated: first 32 of 64 B
+    pause 100.0 rep 9: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 0: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 1: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 2: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 3: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 4: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 5: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 6: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 7: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 8: groups [32] truncated: first 32 of 64 B
+    pause 150.0 rep 9: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 0: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 1: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 2: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 3: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 4: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 5: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 6: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 7: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 8: groups [32] truncated: first 32 of 64 B
+    pause 200.0 rep 9: groups [32] truncated: first 32 of 64 B
+  TX-port output during test: ['channel Error:214\r\n', 'channel Error:82\r\n', 'channel Error:144\r\n', 'channel Error:227\r\n', 'channel Error:74\r\n']

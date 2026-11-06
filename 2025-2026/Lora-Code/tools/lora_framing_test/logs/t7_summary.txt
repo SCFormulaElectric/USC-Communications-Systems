@@ -1,0 +1,6 @@
+T7 trickle: 15 x 8 B writes (gap 10.0 ms grouping)
+  rep 0: groups [48] from writes [(0, 5)] at [148.53] ms  TX='channel Error:94\r\nchannel Error:174\r\n'
+  rep 1: groups [48] from writes [(0, 5)] at [148.21] ms  TX='channel Error:125\r\nchannel Error:205\r\n'
+  rep 2: groups [48] from writes [(0, 5)] at [148.67] ms  TX='channel Error:156\r\nchannel Error:236\r\n'
+  rep 3: groups [48] from writes [(0, 5)] at [148.48] ms  TX='channel Error:187\r\n'
+  rep 4: groups [48] from writes [(0, 5)] at [148.81] ms  TX='channel Error:218\r\nchannel Error:42\r\n'

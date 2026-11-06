@@ -1,0 +1,86 @@
+{
+ "rows": [
+  {
+   "case": "plus3_mid",
+   "rep": 0,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3_mid",
+   "rep": 1,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3_mid",
+   "rep": 2,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3crlf_mid",
+   "rep": 0,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3crlf_mid",
+   "rep": 1,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3crlf_mid",
+   "rep": 2,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3_end",
+   "rep": 0,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3_end",
+   "rep": 1,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  },
+  {
+   "case": "plus3_end",
+   "rep": 2,
+   "groups": [
+    64
+   ],
+   "match": "exact",
+   "tx_echo": ""
+  }
+ ],
+ "post_state": "TX was still in data mode after the test (+++ -> Entry AT; toggled back)"
+}

@@ -1,0 +1,18 @@
+{
+ "configs": [
+  {
+   "k": 3,
+   "period_ms": 200,
+   "pkts_per_s": 15.0,
+   "sent": 4500,
+   "ok": 4500,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 226.81,
+   "lat_p95_ms": 233.11,
+   "lat_max_ms": 236.34,
+   "channel_errors": 0
+  }
+ ],
+ "bad_crc_candidates": 0,
+ "bytes_skipped": 0
+}

@@ -1,0 +1,30 @@
+{
+ "configs": [
+  {
+   "k": 3,
+   "period_ms": 214,
+   "pkts_per_s": 14.02,
+   "sent": 420,
+   "ok": 420,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 226.53,
+   "lat_p95_ms": 232.38,
+   "lat_max_ms": 233.43,
+   "channel_errors": 0
+  },
+  {
+   "k": 2,
+   "period_ms": 143,
+   "pkts_per_s": 13.99,
+   "sent": 418,
+   "ok": 418,
+   "loss_pct": 0.0,
+   "lat_p50_ms": 188.28,
+   "lat_p95_ms": 193.52,
+   "lat_max_ms": 194.27,
+   "channel_errors": 0
+  }
+ ],
+ "bad_crc_candidates": 0,
+ "bytes_skipped": 0
+}

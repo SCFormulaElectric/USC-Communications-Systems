@@ -1,0 +1,17 @@
+T4 production pattern (1680 packets over 119.9 s)
+  received_good_crc: 261
+  bad_crc_candidates: 240
+  lost: 1419
+  lost_by_seq_gaps: 1419
+  duplicates: 0
+  good_crc_not_sent: 0
+  rx_bytes: 21342
+  bytes_skipped_resync: 4638
+  arrival_group_sizes: {155: 3, 64: 2, 158: 1, 82: 36, 86: 4, 84: 57, 83: 108, 198: 1, 81: 4, 85: 7, 87: 4, 77: 4, 131: 6, 76: 1, 88: 1, 79: 3, 74: 1, 80: 2, 92: 1, 90: 1, 94: 1, 73: 1}
+  groups_not_64: 247
+  latency_ms: {'p50': 164.8, 'p95': 169.75, 'max': 236.38, 'min': 57.89}
+  write_spacing_ms: {'min': 41.28, 'p50': 50.01}
+  lost_by_slot: {2: 120, 4: 119, 5: 115, 6: 115, 12: 120, 14: 120, 15: 118, 16: 118, 0: 118, 1: 118, 10: 118, 11: 118, 8: 1, 18: 1}
+  first odd groups (t, size): [(0.717, 155), (1.219, 158), (1.57, 82), (2.074, 86), (2.571, 84), (3.07, 82), (3.572, 83), (4.071, 83), (4.57, 82), (5.071, 83), (5.572, 83), (6.07, 82), (6.572, 84), (6.952, 198), (7.072, 83), (7.571, 83), (8.07, 82), (8.571, 83), (9.072, 83), (9.572, 83)]
+  lost seqs (first 50): [2, 3, 4, 5, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 33, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61]
+  TX port output: 'channel Error:31\r\nchannel Error:74\r\nchannel Error:223\r\nchannel Error:217\r\nchannel Error:251\r\nchannel Error:174\r\nchannel Error:95\r\nchannel Error:111\r\nchannel Error:62\r\nchannel Error:87\r\nchannel Error:2'

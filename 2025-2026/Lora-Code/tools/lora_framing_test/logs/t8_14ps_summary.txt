@@ -1,0 +1,4 @@
+T8 what rate works (64 B production packets; k per write, one write every P ms)
+    k  P(ms)  pkts/s  sent   ok   loss%   lat p50/p95/max ms   TX 'channel Error' lines
+    3    214   14.02   420  420     0.0   226.53/232.38/233.43   0
+    2    143   13.99   418  418     0.0   188.28/193.52/194.27   0

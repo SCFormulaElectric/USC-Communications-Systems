@@ -1,0 +1,15 @@
+{
+ "TX": {
+  "reads": 0,
+  "bytes": 0,
+  "hex": "",
+  "ascii": ""
+ },
+ "RX": {
+  "reads": 0,
+  "bytes": 0,
+  "hex": "",
+  "ascii": ""
+ },
+ "events": []
+}

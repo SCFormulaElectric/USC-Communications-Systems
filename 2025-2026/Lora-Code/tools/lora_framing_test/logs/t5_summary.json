@@ -1,0 +1,1499 @@
+{
+ "gap_ms": 10.0,
+ "by_pause": {
+  "0": {
+   "n": 20,
+   "one_group": 20,
+   "two_groups": 0,
+   "exact": 0,
+   "patterns": {
+    "[131]": 20
+   },
+   "lat_p50_ms": 195.97,
+   "rx_totals": [
+    131
+   ]
+  },
+  "5": {
+   "n": 20,
+   "one_group": 20,
+   "two_groups": 0,
+   "exact": 0,
+   "patterns": {
+    "[131]": 20
+   },
+   "lat_p50_ms": 190.98,
+   "rx_totals": [
+    131
+   ]
+  },
+  "20": {
+   "n": 20,
+   "one_group": 20,
+   "two_groups": 0,
+   "exact": 0,
+   "patterns": {
+    "[131]": 20
+   },
+   "lat_p50_ms": 175.91,
+   "rx_totals": [
+    131
+   ]
+  },
+  "50": {
+   "n": 20,
+   "one_group": 20,
+   "two_groups": 0,
+   "exact": 0,
+   "patterns": {
+    "[131]": 20
+   },
+   "lat_p50_ms": 145.96,
+   "rx_totals": [
+    131
+   ]
+  }
+ },
+ "rows": [
+  {
+   "pause_ms": 0,
+   "rep": 0,
+   "actual_gap_ms": 0.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "00070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b90a01031f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8"
+   ],
+   "latency_last_ms": 195.97,
+   "group_end_ms": [
+    195.97
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 1,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "3e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f70a01035d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f16"
+   ],
+   "latency_last_ms": 195.71,
+   "group_end_ms": [
+    195.71
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 2,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "7c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e350a01039ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d54"
+   ],
+   "latency_last_ms": 195.67,
+   "group_end_ms": [
+    195.67
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 3,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c730a0103d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b92"
+   ],
+   "latency_last_ms": 195.88,
+   "group_end_ms": [
+    195.88
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 4,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab10a0103171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0"
+   ],
+   "latency_last_ms": 195.62,
+   "group_end_ms": [
+    195.62
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 5,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8ef0a0103555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e"
+   ],
+   "latency_last_ms": 196.06,
+   "group_end_ms": [
+    196.06
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 6,
+   "actual_gap_ms": 0.19,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d0a0103939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c"
+   ],
+   "latency_last_ms": 195.6,
+   "group_end_ms": [
+    195.6
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 7,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "b2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b0a0103d1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a"
+   ],
+   "latency_last_ms": 196.24,
+   "group_end_ms": [
+    196.24
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 8,
+   "actual_gap_ms": 0.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a90a01030f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8"
+   ],
+   "latency_last_ms": 196.06,
+   "group_end_ms": [
+    196.06
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 9,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "2e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e70a01034d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff06"
+   ],
+   "latency_last_ms": 195.98,
+   "group_end_ms": [
+    195.98
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 10,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "6c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e250a01038b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d44"
+   ],
+   "latency_last_ms": 195.84,
+   "group_end_ms": [
+    195.84
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 11,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c630a0103c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b82"
+   ],
+   "latency_last_ms": 196.01,
+   "group_end_ms": [
+    196.01
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 12,
+   "actual_gap_ms": 0.0,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa10a0103070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0"
+   ],
+   "latency_last_ms": 196.43,
+   "group_end_ms": [
+    196.43
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 13,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8df0a0103454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe"
+   ],
+   "latency_last_ms": 196.09,
+   "group_end_ms": [
+    196.09
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 14,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d0a0103838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c"
+   ],
+   "latency_last_ms": 196.53,
+   "group_end_ms": [
+    196.53
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 15,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "a2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b0a0103c1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a"
+   ],
+   "latency_last_ms": 196.46,
+   "group_end_ms": [
+    196.46
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 16,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b92990a0103ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8"
+   ],
+   "latency_last_ms": 195.89,
+   "group_end_ms": [
+    195.89
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 17,
+   "actual_gap_ms": 0.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "1e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d70a01033d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6"
+   ],
+   "latency_last_ms": 195.95,
+   "group_end_ms": [
+    195.95
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 18,
+   "actual_gap_ms": 0.19,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "5c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e150a01037b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d34"
+   ],
+   "latency_last_ms": 195.69,
+   "group_end_ms": [
+    195.69
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 0,
+   "rep": 19,
+   "actual_gap_ms": 0.1,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "9aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c530a0103b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b72"
+   ],
+   "latency_last_ms": 195.9,
+   "group_end_ms": [
+    195.9
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 0,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a910a0103f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0"
+   ],
+   "latency_last_ms": 190.98,
+   "group_end_ms": [
+    190.98
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 1,
+   "actual_gap_ms": 5.0,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cf0a0103353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7ee"
+   ],
+   "latency_last_ms": 190.92,
+   "group_end_ms": [
+    190.92
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 2,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d0a0103737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c"
+   ],
+   "latency_last_ms": 190.86,
+   "group_end_ms": [
+    190.86
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 3,
+   "actual_gap_ms": 5.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b0a0103b1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a"
+   ],
+   "latency_last_ms": 190.88,
+   "group_end_ms": [
+    190.88
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 4,
+   "actual_gap_ms": 5.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b82890a0103eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8"
+   ],
+   "latency_last_ms": 191.0,
+   "group_end_ms": [
+    191.0
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 5,
+   "actual_gap_ms": 5.03,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "0e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c70a01032d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6"
+   ],
+   "latency_last_ms": 190.78,
+   "group_end_ms": [
+    190.78
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 6,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "4c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050a01036b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d24"
+   ],
+   "latency_last_ms": 191.28,
+   "group_end_ms": [
+    191.28
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 7,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "8a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c430a0103a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b62"
+   ],
+   "latency_last_ms": 191.33,
+   "group_end_ms": [
+    191.33
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 8,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a810a0103e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0"
+   ],
+   "latency_last_ms": 191.0,
+   "group_end_ms": [
+    191.0
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 9,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bf0a0103252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7de"
+   ],
+   "latency_last_ms": 191.32,
+   "group_end_ms": [
+    191.32
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 10,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd0a0103636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c"
+   ],
+   "latency_last_ms": 190.81,
+   "group_end_ms": [
+    190.81
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 11,
+   "actual_gap_ms": 5.0,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b0a0103a1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a"
+   ],
+   "latency_last_ms": 190.91,
+   "group_end_ms": [
+    190.91
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 12,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b72790a0103dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a9198"
+   ],
+   "latency_last_ms": 190.81,
+   "group_end_ms": [
+    190.81
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 13,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b70a01031d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6"
+   ],
+   "latency_last_ms": 190.84,
+   "group_end_ms": [
+    190.84
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 14,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "3c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef50a01035b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d14"
+   ],
+   "latency_last_ms": 190.9,
+   "group_end_ms": [
+    190.9
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 15,
+   "actual_gap_ms": 5.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "7a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c330a010399a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b52"
+   ],
+   "latency_last_ms": 191.44,
+   "group_end_ms": [
+    191.44
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 16,
+   "actual_gap_ms": 5.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a710a0103d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990"
+   ],
+   "latency_last_ms": 191.25,
+   "group_end_ms": [
+    191.25
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 17,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "f6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8af0a0103151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ce"
+   ],
+   "latency_last_ms": 191.08,
+   "group_end_ms": [
+    191.08
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 18,
+   "actual_gap_ms": 5.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6ed0a0103535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c"
+   ],
+   "latency_last_ms": 191.01,
+   "group_end_ms": [
+    191.01
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 5,
+   "rep": 19,
+   "actual_gap_ms": 5.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b0a010391989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a"
+   ],
+   "latency_last_ms": 190.65,
+   "group_end_ms": [
+    190.65
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 0,
+   "actual_gap_ms": 20.2,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b62690a0103cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a8188"
+   ],
+   "latency_last_ms": 175.75,
+   "group_end_ms": [
+    175.75
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 1,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a70a01030d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6"
+   ],
+   "latency_last_ms": 175.97,
+   "group_end_ms": [
+    175.97
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 2,
+   "actual_gap_ms": 20.05,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "2c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee50a01034b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd04"
+   ],
+   "latency_last_ms": 176.46,
+   "group_end_ms": [
+    176.46
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 3,
+   "actual_gap_ms": 20.93,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "6a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c230a01038990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b42"
+   ],
+   "latency_last_ms": 174.93,
+   "group_end_ms": [
+    174.93
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 4,
+   "actual_gap_ms": 22.22,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a610a0103c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980"
+   ],
+   "latency_last_ms": 173.8,
+   "group_end_ms": [
+    173.8
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 5,
+   "actual_gap_ms": 20.17,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "e6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989f0a0103050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7be"
+   ],
+   "latency_last_ms": 180.73,
+   "group_end_ms": [
+    180.73
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 6,
+   "actual_gap_ms": 20.03,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dd0a0103434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc"
+   ],
+   "latency_last_ms": 175.98,
+   "group_end_ms": [
+    175.98
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 7,
+   "actual_gap_ms": 20.09,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b0a010381888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a"
+   ],
+   "latency_last_ms": 175.89,
+   "group_end_ms": [
+    175.89
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 8,
+   "actual_gap_ms": 20.11,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b52590a0103bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a7178"
+   ],
+   "latency_last_ms": 175.71,
+   "group_end_ms": [
+    175.71
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 9,
+   "actual_gap_ms": 20.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990970a0103fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6"
+   ],
+   "latency_last_ms": 175.79,
+   "group_end_ms": [
+    175.79
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 10,
+   "actual_gap_ms": 24.75,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "1c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced50a01033b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4"
+   ],
+   "latency_last_ms": 171.29,
+   "group_end_ms": [
+    171.29
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 11,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "5a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c130a01037980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b32"
+   ],
+   "latency_last_ms": 175.78,
+   "group_end_ms": [
+    175.78
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 12,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a510a0103b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970"
+   ],
+   "latency_last_ms": 176.1,
+   "group_end_ms": [
+    176.1
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 13,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "d6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f0a0103f5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7ae"
+   ],
+   "latency_last_ms": 175.99,
+   "group_end_ms": [
+    175.99
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 14,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cd0a0103333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ec"
+   ],
+   "latency_last_ms": 175.91,
+   "group_end_ms": [
+    175.91
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 15,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b0a010371787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a"
+   ],
+   "latency_last_ms": 176.18,
+   "group_end_ms": [
+    176.18
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 16,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "90979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b42490a0103afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a6168"
+   ],
+   "latency_last_ms": 176.04,
+   "group_end_ms": [
+    176.04
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 17,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980870a0103edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6"
+   ],
+   "latency_last_ms": 176.1,
+   "group_end_ms": [
+    176.1
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 18,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "0c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec50a01032b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4"
+   ],
+   "latency_last_ms": 175.91,
+   "group_end_ms": [
+    175.91
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 20,
+   "rep": 19,
+   "actual_gap_ms": 20.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:63]->got[0:63], exp[63:128]->got[66:131]",
+   "group_hex": [
+    "4a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a01036970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b22"
+   ],
+   "latency_last_ms": 175.83,
+   "group_end_ms": [
+    175.83
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 0,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a410a0103a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960"
+   ],
+   "latency_last_ms": 146.17,
+   "group_end_ms": [
+    146.17
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 1,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "c6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f0a0103e5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979e"
+   ],
+   "latency_last_ms": 145.75,
+   "group_end_ms": [
+    145.75
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 2,
+   "actual_gap_ms": 50.04,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bd0a0103232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dc"
+   ],
+   "latency_last_ms": 145.85,
+   "group_end_ms": [
+    145.85
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 3,
+   "actual_gap_ms": 50.3,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb0a010361686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a"
+   ],
+   "latency_last_ms": 80.47,
+   "group_end_ms": [
+    80.47
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 4,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "80878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b32390a01039fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a5158"
+   ],
+   "latency_last_ms": 145.74,
+   "group_end_ms": [
+    145.74
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 5,
+   "actual_gap_ms": 68.8,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970770a0103dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f96"
+   ],
+   "latency_last_ms": 127.0,
+   "group_end_ms": [
+    127.0
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 6,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb50a01031b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4"
+   ],
+   "latency_last_ms": 146.15,
+   "group_end_ms": [
+    146.15
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 7,
+   "actual_gap_ms": 50.17,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "3a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf30a01035960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b12"
+   ],
+   "latency_last_ms": 145.76,
+   "group_end_ms": [
+    145.76
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 8,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a310a0103979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950"
+   ],
+   "latency_last_ms": 145.91,
+   "group_end_ms": [
+    145.91
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 9,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "b6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f0a0103d5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e"
+   ],
+   "latency_last_ms": 145.44,
+   "group_end_ms": [
+    145.44
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 10,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "f4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6ad0a0103131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5cc"
+   ],
+   "latency_last_ms": 147.49,
+   "group_end_ms": [
+    147.49
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 11,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4eb0a010351585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a"
+   ],
+   "latency_last_ms": 146.0,
+   "group_end_ms": [
+    146.0
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 12,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "70777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b22290a01038f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a4148"
+   ],
+   "latency_last_ms": 146.02,
+   "group_end_ms": [
+    146.02
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 13,
+   "actual_gap_ms": 50.01,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960670a0103cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f86"
+   ],
+   "latency_last_ms": 146.26,
+   "group_end_ms": [
+    146.26
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 14,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea50a01030b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4"
+   ],
+   "latency_last_ms": 146.25,
+   "group_end_ms": [
+    146.25
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 15,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "2a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce30a01034950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb02"
+   ],
+   "latency_last_ms": 146.01,
+   "group_end_ms": [
+    146.01
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 16,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a210a0103878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940"
+   ],
+   "latency_last_ms": 146.16,
+   "group_end_ms": [
+    146.16
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 17,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "a6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f0a0103c5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e"
+   ],
+   "latency_last_ms": 145.62,
+   "group_end_ms": [
+    145.62
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 18,
+   "actual_gap_ms": 50.02,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "e4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969d0a0103030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bc"
+   ],
+   "latency_last_ms": 145.96,
+   "group_end_ms": [
+    145.96
+   ],
+   "tx_echo": ""
+  },
+  {
+   "pause_ms": 50,
+   "rep": 19,
+   "actual_gap_ms": 50.24,
+   "groups": [
+    131
+   ],
+   "rx_total": 131,
+   "match": "mismatch (131 B vs 128 B expected); matching runs: exp[0:64]->got[0:64], exp[64:128]->got[67:131]",
+   "group_hex": [
+    "222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4db0a010341484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa"
+   ],
+   "latency_last_ms": 145.96,
+   "group_end_ms": [
+    145.96
+   ],
+   "tx_echo": ""
+  }
+ ]
+}

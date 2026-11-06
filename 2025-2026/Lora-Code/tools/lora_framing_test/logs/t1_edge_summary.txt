@@ -1,0 +1,27 @@
+T1 single writes (arrival-group gap 10.0 ms; latency from estimated UART wire end)
+  read-to-read gaps inside 64 B arrivals: n=0 max=None ms p95=None ms p50=None ms
+  size rep  groups(B)            total  latency first/last ms   match
+   242   0  [242]                  242    244.83/264.83        exact
+   242   1  [242]                  242    245.73/265.82        exact
+   242   2  [242]                  242    245.44/265.01        exact
+   244   0  [244]                  244    246.36/267.02        exact
+   244   1  [244]                  244    246.31/266.65        exact
+   244   2  [244]                  244    246.63/266.95        exact
+   245   0  [245]                  245    247.72/268.45        exact
+   245   1  [245]                  245    247.94/268.17        exact
+   245   2  [245]                  245    248.08/268.98        exact
+   246   0  [246]                  246    247.81/268.56        exact
+   246   1  [246]                  246    252.42/272.67        exact
+   246   2  [246]                  246     247.8/268.21        exact
+   247   0  [247]                  247    167.13/189.09        exact
+   247   1  [247]                  247     167.1/188.01        exact
+   247   2  [247]                  247    166.76/187.08        exact
+   248   0  [247]                  247    166.99/187.19        truncated: first 247 of 248 B
+   248   1  [247]                  247     166.9/188.29        truncated: first 247 of 248 B
+   248   2  [247]                  247    166.62/187.6         truncated: first 247 of 248 B
+   249   0  [247]                  247    167.12/187.54        truncated: first 247 of 249 B
+   249   1  [247]                  247    167.57/187.7         truncated: first 247 of 249 B
+   249   2  [247]                  247    167.11/187.25        truncated: first 247 of 249 B
+   250   0  [247]                  247    167.25/186.95        truncated: first 247 of 250 B  TX-echo='channel Error:90\r\n'
+   250   1  [247]                  247    166.58/187.48        truncated: first 247 of 250 B  TX-echo='channel Error:121\r\n'
+   250   2  [247]                  247    166.59/187.53        truncated: first 247 of 250 B  TX-echo='channel Error:152\r\n'
