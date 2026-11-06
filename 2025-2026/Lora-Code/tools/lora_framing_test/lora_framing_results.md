@@ -143,8 +143,8 @@ second. Meanwhile the car side sends 3 × 64 B telemetry per write on the schedu
   | t9c | 98% | **100%** (108 of 110 overlapping batches lost; 0 of 610 non-overlapping) |
   | t9d | 87% | 90% |
 
-  With slightly shorter airtimes (0.6 ms/B + 4 ms ≈ 121 ms and ≈ 18 ms), **all 317
-  commands predicted to overlap a car transmission were lost**
+  With slightly shorter airtimes (≈ 121 ms and ≈ 18 ms), **all 321 commands predicted to
+  overlap a car transmission were lost**
   (`py t9_collision_check.py 121 18`). The ~10% of t9b/t9d outcomes the model gets
   wrong were not explained. Script: `t9_collision_check.py`.
 - The script's own "collecting / transmitting" columns show the car module's state when
