@@ -184,6 +184,8 @@ py framing_tests.py run t4                       # 14/s, 2 min
 py framing_tests.py run t6                       # '+++' in data
 py framing_tests.py run t7                       # trickle
 py framing_tests.py run t8                       # rate/batching (--configs 3x214,2x143 --duration 30)
+py framing_tests.py run t9                       # PC -> car commands: t9a-t9d in a row (~11 min)
+py framing_tests.py run t9b --duration 60        # one T9 sub-test, shorter
 py framing_tests.py analyze t3 --gap-ms 10       # re-analyze any saved log
 ```
 

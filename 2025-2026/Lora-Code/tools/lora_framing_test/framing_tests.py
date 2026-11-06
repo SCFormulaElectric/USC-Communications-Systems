@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""DX-LR02 UART->radio framing tests (T0-T6). See lora_framing_results.md.
+"""DX-LR02 UART->radio framing tests (T0-T9). See lora_framing_results.md.
 
 Run a test (logs raw CSV to logs/<test>_raw.csv, then analyzes it):
     py framing_tests.py run t1 --tx COM8 --rx COM9
 Re-analyze a saved log with a different arrival-group gap:
     py framing_tests.py analyze t1 --gap-ms 5
+T9 (PC -> car commands): run t9a / t9b / t9c / t9d, or t9 for all four in a row.
 
 Modules are in MODE1 (fixed-point): every UART write that starts a packet carries the
 3-byte header [RX addr hi][RX addr lo][channel] = 0A 01 03, which the RX module strips.
+Writes towards the car-side module (T9 commands) use 0A 02 03.
 """
 
 import argparse
+import bisect
 import difflib
 import json
 import os
@@ -311,8 +314,9 @@ def run_prod(args, test):
     analyze_prod(args, test)
 
 
-def parse_stream(reads):
-    """Byte-stream parser: find A5 5A, take 64 B, check CRC; on failure advance 1 byte."""
+def parse_stream(reads, size=64):
+    """Byte-stream parser: find A5 5A, take `size` B, check CRC (last 2 B, LE); on failure
+    advance 1 byte."""
     buf = bytearray()
     tbyte = []
     for t, d in reads:
@@ -321,12 +325,12 @@ def parse_stream(reads):
     good, bad_crc, skipped = [], 0, 0
     i = 0
     n = len(buf)
-    while i + 64 <= n:
+    while i + size <= n:
         if buf[i] == 0xA5 and buf[i + 1] == 0x5A:
-            frame = bytes(buf[i:i + 64])
-            if crc16_ccitt(frame[:62]) == struct.unpack_from("<H", frame, 62)[0]:
-                good.append((frame, tbyte[i + 63], i))
-                i += 64
+            frame = bytes(buf[i:i + size])
+            if crc16_ccitt(frame[:size - 2]) == struct.unpack_from("<H", frame, size - 2)[0]:
+                good.append((frame, tbyte[i + size - 1], i))
+                i += size
                 continue
             bad_crc += 1
         skipped += 1
@@ -567,13 +571,215 @@ def analyze_t6(args, state=None):
     write_summary("t6", {"rows": rows, "post_state": state}, "\n".join(lines))
 
 
+# --------------------------------------------------------------------------- T9: PC -> car commands
+# Port roles: --tx is the car side (MAC 0a,02), --rx is the PC side (MAC 0a,01).
+HDR_TO_CAR = bytes([0x0A, 0x02, 0x03])
+CMD_LEN = 24
+COLLECT_MS = 101        # module collection window from a write's first byte (T2)
+AIR_MS_PER_BYTE = 0.6   # LEVEL 7 airtime per data byte (T1 latency vs size); a model, see summary
+T9_CONFIGS = {          # car write period ms (None = no telemetry), skip every Nth write, default s
+    "t9a": (None, 0, 50),
+    "t9b": (200, 0, 180),
+    "t9c": (200, 5, 180),
+    "t9d": (250, 0, 180),
+}
+
+
+def build_command(seq, rnd):
+    """24 B command: A5 5A, 0x18 (ver 1, type 8), seq, key 5A C3, code 1-7, 15 B args, CRC."""
+    body = bytes([0xA5, 0x5A, 0x18, seq & 0xFF, 0x5A, 0xC3, rnd.randint(1, 7)]) + rnd.randbytes(15)
+    return body + struct.pack("<H", crc16_ccitt(body))
+
+
+def run_t9(args, test):
+    """Car side sends 3 x 64 B telemetry per write (header 0A 01 03) on its schedule; the PC side
+    sends one 24 B command per second (header 0A 02 03). Both run from one loop, so every write
+    on each port is logged with its real start time."""
+    period, skip, default_s = T9_CONFIGS[test]
+    duration = args.duration or default_s
+    rnd = random.Random({"t9a": 91, "t9b": 92, "t9c": 93, "t9d": 94}[test])
+    tx, rx, rec = open_pair(args)
+    t_base = now() + 0.5
+    events = []
+    t_prev = None
+    for i in range(int(duration)):
+        # random point in each second, redrawn until >= 150 ms after the previous command
+        # (PC-side writes must also start >= 120 ms apart)
+        off = 0.5 if period is None else rnd.random()
+        while t_prev is not None and t_base + i + off - t_prev < 0.15:
+            off = rnd.random()
+        t_prev = t_base + i + off
+        events.append((t_prev, "cmd", i))
+    if period is not None:
+        for i in range(int(duration * 1000 / period)):
+            if skip and i % skip == skip - 1:
+                continue
+            events.append((t_base + i * period / 1000, "car", i))
+    events.sort()
+    seq = cseq = 0
+    for t, kind, i in events:
+        busy_wait_until(t)
+        if kind == "car":
+            pkts = [build_packet(seq + j, int((now() - t_base) * 1000), rnd) for j in range(3)]
+            rec.write(tx.ser, HDR + b"".join(pkts),
+                      {"test": test, "dir": "car", "i": i, "seqs": list(range(seq, seq + 3))})
+            seq += 3
+        else:
+            rec.write(rx.ser, HDR_TO_CAR + build_command(cseq, rnd),
+                      {"test": test, "dir": "cmd", "i": i, "cseq": cseq & 0xFF})
+            cseq += 1
+    print(f"{test}: sent {cseq} commands and {seq} telemetry packets")
+    close_pair(args.name or test, tx, rx, rec, tail=3.0)
+    analyze_t9(args, test)
+
+
+def car_state(t, car_w):
+    """Car module state when a command was written, from the car writes before it.
+    Model: collecting for COLLECT_MS after a write's first byte, then transmitting for
+    AIR_MS_PER_BYTE per data byte. Returns (state, ms since last car write start)."""
+    k = bisect.bisect_right([w["t_start"] for w in car_w], t) - 1
+    if k < 0:
+        return "idle", None
+    phase = (t - car_w[k]["t_start"]) * 1000
+    collecting = phase < COLLECT_MS
+    transmitting = False
+    for w in car_w[max(0, k - 3):k + 1]:  # an earlier write can still be on air
+        dt = (t - w["t_start"]) * 1000
+        busy_end = COLLECT_MS + AIR_MS_PER_BYTE * (len(w["data"]) - len(HDR))
+        if COLLECT_MS <= dt < busy_end:
+            transmitting = True
+    state = {(True, True): "collect+transmit", (True, False): "collecting",
+             (False, True): "transmitting", (False, False): "idle"}[(collecting, transmitting)]
+    return state, phase
+
+
+def leftover_text(reads, good, size):
+    """Bytes on a port that were not part of a good frame (status text, fragments)."""
+    buf = b"".join(d for _, d in reads)
+    mask = bytearray(len(buf))
+    for _, _, i in good:
+        mask[i:i + size] = b"\x01" * size
+    return bytes(b for b, m in zip(buf, mask) if not m)
+
+
+def analyze_t9(args, test):
+    name = args.name or test
+    period, skip, _ = T9_CONFIGS[test]
+    writes, reads, _ = load_csv(os.path.join(LOGS, f"{name}_raw.csv"))
+    car_w = [w for w in writes if w["tag"]["dir"] == "car"]
+    cmd_w = [w for w in writes if w["tag"]["dir"] == "cmd"]
+
+    # commands, as received on the car-side port
+    got, cmd_bad_crc, _, _ = parse_stream(reads["TX"], CMD_LEN)
+    rx_t, dup = {}, 0
+    for frame, t, _ in got:
+        if frame in rx_t:
+            dup += 1
+        rx_t.setdefault(frame, t)
+    rows = []
+    for w in cmd_w:
+        frame = w["data"][len(HDR_TO_CAR):]
+        state, phase = car_state(w["t_start"], car_w)
+        lat = rx_t[frame] - wire_end(w) if frame in rx_t else None
+        rows.append({"cseq": w["tag"]["cseq"], "t_s": round(w["t_start"], 3), "state": state,
+                     "phase_ms": None if phase is None else round(phase, 1),
+                     "in_gap": bool(period and phase is not None and phase >= period),
+                     "delivered": lat is not None, "latency_ms": ms(lat)})
+
+    def stats(rs):
+        lat = [r["latency_ms"] for r in rs if r["delivered"]]
+        return {"sent": len(rs), "delivered": len(lat),
+                "pct": round(100 * len(lat) / len(rs), 1) if rs else None,
+                "lat_p50_ms": pct(lat, 50), "lat_p95_ms": pct(lat, 95), "lat_max_ms": max(lat) if lat else None}
+
+    by_state = {s: stats([r for r in rows if r["state"] == s])
+                for s in ("collecting", "collect+transmit", "transmitting", "idle")}
+    by_state = {s: v for s, v in by_state.items() if v["sent"]}
+    busy = stats([r for r in rows if r["state"] != "idle"])
+    idle = stats([r for r in rows if r["state"] == "idle"])
+    gap = stats([r for r in rows if r["in_gap"]]) if skip else None
+    no_gap = stats([r for r in rows if not r["in_gap"]]) if skip else None
+    buckets = {}
+    for r in rows:
+        if r["phase_ms"] is None:
+            continue
+        b = int(r["phase_ms"] // 20) * 20
+        sent_ok = buckets.setdefault(b, [0, 0])
+        sent_ok[0] += 1
+        sent_ok[1] += r["delivered"]
+
+    # telemetry, as received on the PC-side port
+    tel_good, tel_bad_crc, tel_skipped, tel_bytes = parse_stream(reads["RX"])
+    tel_rx = {}
+    for frame, t, _ in tel_good:
+        tel_rx.setdefault(frame, t)
+    tel_sent = tel_ok = 0
+    tel_lat = []
+    for w in car_w:
+        body = w["data"][len(HDR):]
+        for j in range(0, len(body), 64):
+            tel_sent += 1
+            f = body[j:j + 64]
+            if f in tel_rx:
+                tel_ok += 1
+                tel_lat.append(tel_rx[f] - wire_end(w))
+
+    car_extra = leftover_text(reads["TX"], got, CMD_LEN)
+    pc_extra = leftover_text(reads["RX"], tel_good, 64)
+    s = {
+        "test": test, "car_period_ms": period, "skip_every": skip,
+        "model": f"collecting 0-{COLLECT_MS} ms after a car write starts, then "
+                 f"{AIR_MS_PER_BYTE} ms/B airtime (estimate, not measured per packet)",
+        "commands": dict(stats(rows), duplicates=dup, bad_crc_candidates=cmd_bad_crc),
+        "by_state": by_state, "busy": busy, "idle": idle, "in_gap": gap, "outside_gap": no_gap,
+        "by_phase_20ms": {str(k): {"sent": v[0], "delivered": v[1]} for k, v in sorted(buckets.items())},
+        "telemetry": {"sent": tel_sent, "ok": tel_ok,
+                      "loss_pct": round(100 * (tel_sent - tel_ok) / tel_sent, 1) if tel_sent else None,
+                      "bad_crc_candidates": tel_bad_crc, "bytes_skipped": tel_skipped, "rx_bytes": tel_bytes,
+                      "lat_p50_ms": ms(pct(tel_lat, 50)), "lat_p95_ms": ms(pct(tel_lat, 95))},
+        "car_port_channel_errors": car_extra.count(b"channel Error"),
+        "car_port_other_bytes": car_extra.decode("ascii", "backslashreplace")[:500],
+        "pc_port_bytes_not_telemetry": len(pc_extra),
+        "rows": rows,
+    }
+
+    def fmt(st):
+        return (f"sent {st['sent']:3d}  delivered {st['delivered']:3d} ({st['pct']}%)  "
+                f"lat p50/p95/max {st['lat_p50_ms']}/{st['lat_p95_ms']}/{st['lat_max_ms']} ms")
+
+    what = "no telemetry" if period is None else \
+        f"car sends 3 x 64 B every {period} ms" + (f", skipping every {skip}th write" if skip else "")
+    lines = [f"T9 {test}: PC -> car commands ({what})",
+             f"  commands: {fmt(s['commands'])}, duplicates {dup}, bad-CRC candidates {cmd_bad_crc}"]
+    if period is not None:
+        lines.append(f"  by car module state when the command was written ({s['model']}):")
+        for st, v in by_state.items():
+            lines.append(f"    {st:17s} {fmt(v)}")
+        lines.append(f"  busy (any non-idle): {fmt(busy)}")
+        lines.append(f"  idle:                {fmt(idle)}")
+        if skip:
+            lines.append(f"  inside skipped-write gap:  {fmt(gap)}")
+            lines.append(f"  outside gap:               {fmt(no_gap)}")
+        lines.append("  delivered/sent by ms since last car write start (20 ms buckets):")
+        lines.append("    " + "  ".join(f"{k}:{v[1]}/{v[0]}" for k, v in sorted(buckets.items())))
+        t = s["telemetry"]
+        lines.append(f"  telemetry: sent {t['sent']}, ok {t['ok']}, loss {t['loss_pct']}%, "
+                     f"bad-CRC candidates {t['bad_crc_candidates']}, bytes skipped {t['bytes_skipped']}, "
+                     f"lat p50/p95 {t['lat_p50_ms']}/{t['lat_p95_ms']} ms")
+    lines.append(f"  car port: {s['car_port_channel_errors']} 'channel Error' lines; other bytes not in "
+                 f"commands: {s['car_port_other_bytes'][:200]!r}")
+    lines.append(f"  PC port: {s['pc_port_bytes_not_telemetry']} bytes not in telemetry packets")
+    write_summary(name, s, "\n".join(lines))
+
+
 # --------------------------------------------------------------------------- CLI
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("action", choices=["run", "analyze"])
-    p.add_argument("test", choices=["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"])
-    p.add_argument("--tx", default="COM8")
-    p.add_argument("--rx", default="COM9")
+    p.add_argument("test", choices=["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8",
+                                    "t9", "t9a", "t9b", "t9c", "t9d"])
+    p.add_argument("--tx", default="COM8", help="car-side module (MAC 0a,02)")
+    p.add_argument("--rx", default="COM9", help="PC-side module (MAC 0a,01)")
     p.add_argument("--gap-ms", type=float, default=5.0, help="arrival-group gap threshold (default 5 ms)")
     p.add_argument("--reps", type=int, default=None)
     p.add_argument("--duration", type=float, default=None)
@@ -596,6 +802,18 @@ def main():
         args.reps = {"t1": 5, "t2": 10, "t5": 20, "t7": 5}.get(t, 1)
     if t == "t0" and args.duration is None:
         args.duration = 10
+    if t.startswith("t9"):
+        tests = ["t9a", "t9b", "t9c", "t9d"] if t == "t9" else [t]
+        if t == "t9":
+            args.name = None  # each sub-test logs under its own name
+        for i, name in enumerate(tests):
+            if args.action == "run":
+                if i:
+                    time.sleep(2.0)  # let the previous sub-test drain
+                run_t9(args, name)
+            else:
+                analyze_t9(args, name)
+        return
     if args.action == "run":
         {"t0": run_t0, "t1": run_t1, "t2": lambda a: run_pairs(a, "T2"), "t3": lambda a: run_prod(a, "T3"),
          "t4": lambda a: run_prod(a, "T4"), "t5": lambda a: run_pairs(a, "T5"), "t6": run_t6, "t7": run_t7, "t8": run_t8}[t](args)
