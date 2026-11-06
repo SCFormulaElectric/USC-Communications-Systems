@@ -1,0 +1,5 @@
+T11 t11b: probes at 110 ms, a collider every 10th command
+  probes delivered 641/641; colliders delivered 0/71
+  PC module 'Power on' at [] s; car module 'Power on' lines: 0
+  lockups (>= 5 failed probes in a row after a good one): 0; started right after a collider: 0
+  colliders followed by 5 working probes (no lockup): 70 of 71

@@ -156,8 +156,55 @@ second. Meanwhile the car side sends 3 × 64 B telemetry per write on the schedu
   telemetry when they do.
   - A reserved quiet slot (t9c) raised command delivery to 78% inside the gap.
   - Getting close to 100% needs the PC to time each command so its on-air time falls in
-    the car's quiet time, e.g. a fixed delay after a telemetry batch arrives. **Not tested
-    yet.**
+    the car's quiet time, e.g. a fixed delay after a telemetry batch arrives. Tested in
+    T10/T11 below.
+
+**T10 – commands a fixed delay after a telemetry batch arrives.** The car sends 3 × 64 B
+every 200 ms (15/s, above the brief's 14/s cap). After every 2nd batch arrives at the PC,
+the PC waits a fixed delay and sends one 24 B command.
+
+- **The first sweep was invalid.** A default in the script gave each delay 1 command
+  instead of 40 (`logs/t10_*`); fixed since.
+- The rerun with 40 per delay (`logs/t10_reps40_*`) delivered only 3 of 360 commands,
+  because of the lockup described below.
+- **The soaks show what the timing does when the PC module is healthy:**
+
+  | Soak | Before the PC module's `Power on` | After it |
+  |---|---|---|
+  | 90 ms delay (`logs/t10s_90ms_*`) | 0/129 commands; 40/295 telemetry writes lost | **299/299 commands; 0/602 telemetry lost** |
+  | 110 ms delay (`logs/t10s_*`) | 0/85 commands; 41/211 telemetry writes lost | **341/342 commands; 1/689 telemetry lost** |
+
+  Command latency at 110 ms: p50 128.5 ms. The delay was met precisely (p50 110.03 ms).
+
+**PC-module lockup (found in T9 and T10).** The PC-side module (COM9) sometimes stops
+delivering commands, and about 1 in 5 telemetry writes is lost on its receive side. It
+prints nothing until it restarts itself with `Power on`.
+
+- The time from the last good command to `Power on` was 68.5 s (t9b), 69.5 s (t9d), and
+  68.5 s twice in the T10 sweep. That regularity looks like a watchdog, not a power dip
+  (not proven).
+- Lockups appeared only with two-way traffic: t9b, t9d and T10. None appeared in t9a
+  (commands only), t9c, any one-way test, or T11. The car module never restarted.
+- A lockup carries over between runs. Both T10 soaks started locked from the sweep.
+- This probably explains T9's unexplained ~10%, and the T10 telemetry losses with "no
+  command near".
+
+**T11 – does a collision trigger the lockup? No.** Probe commands at 110 ms, with every
+10th command a "collider" at a delay whose on-air time overlaps a telemetry batch. 5 min
+each:
+
+| Sub-test | Probes (110 ms) | Colliders | Telemetry writes lost | PC `Power on` |
+|---|---|---|---|---|
+| t11a, colliders at 70 ms (overlap the next batch's end) | **642/642** | 0/71 | 71 (exactly 1 per collider; 0 otherwise) | none |
+| t11b, colliders at 140 ms (overlap the batch after's start) | **641/641** | 0/71 | 71 (exactly 1 per collider; 0 otherwise) | none |
+
+- A collision costs exactly one command and one telemetry batch. The module keeps
+  working.
+- 110 ms timing held for 10 minutes: 1283/1283 probes delivered.
+- **The lockup trigger is still unknown.** The T10 sweep locked up within seconds using
+  delays T11 didn't try: 80, 100, 120, 130 and 150 ms. 80, 130 and 150 ms are
+  near-simultaneous start/end cases in the timing model. A run with those as colliders
+  was started and **stopped before it saved any data**.
 
 ## What this means for the car firmware
 
@@ -234,6 +281,8 @@ py framing_tests.py run t9b --duration 60        # one T9 sub-test, shorter
 py framing_tests.py run t10                      # command delay sweep 70-150 ms, then 3 min soak at the best (~7 min)
 py framing_tests.py run t10s --delay 110         # soak at one delay only
 py t9_collision_check.py 130 25                  # T9 on-air collision model vs. results
+py framing_tests.py run t11                      # lockup trigger: 110 ms probes + colliders at 70 / 140 ms (~10 min)
+py framing_tests.py run t11a --delay 80 --name t11_c80 --duration 180   # one other collider delay
 py framing_tests.py analyze t3 --gap-ms 10       # re-analyze any saved log
 ```
 

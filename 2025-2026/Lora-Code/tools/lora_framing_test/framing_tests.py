@@ -784,9 +784,9 @@ T10_BATCH_GAP = 0.010   # a batch has fully arrived after 10 ms with no RX bytes
 T10_PERIOD = 0.2        # car: 3 x 64 B every 200 ms (production pattern)
 
 
-def run_t10(args, name, delays, per_delay=None, duration=None):
+def run_t10(args, name, delays, per_delay=None, duration=None, delay_fn=None, analyze=True):
     """Sweep (per_delay set): every delay gets per_delay commands, interleaved in random order.
-    Soak (duration set): one delay for `duration` seconds."""
+    Soak (duration set): one delay for `duration` seconds, or delay_fn(command index) if given."""
     rnd = random.Random(101)
     order = []
     if per_delay:
@@ -815,7 +815,7 @@ def run_t10(args, name, delays, per_delay=None, duration=None):
         else:
             if now() > t_end - 1.0:
                 return
-            d = delays[0]
+            d = delay_fn(cseq) if delay_fn else delays[0]
         t_send = a + d / 1000
         if t_send < now() or t_send - last_cmd < 0.15:
             skipped_late += 1
@@ -862,7 +862,7 @@ def run_t10(args, name, delays, per_delay=None, duration=None):
     print(f"{name}: sent {cseq} commands and {seq} telemetry packets "
           f"({skipped_late} batches skipped: command would have been late or too close to the previous one)")
     close_pair(name, tx, rx, rec, tail=3.0)
-    return analyze_t10(args, name)
+    return analyze_t10(args, name) if analyze else None
 
 
 def analyze_t10(args, name):
@@ -950,12 +950,106 @@ def analyze_t10(args, name):
     return best
 
 
+# --------------------------------------------------------------------------- T11: lockup trigger
+# T10 showed the PC-side module sometimes stops delivering commands (and drops ~1 in 5 telemetry
+# writes) until it prints "Power on" ~68-70 s after its last good command. T11 sends probe commands
+# at a safe delay and, every Nth command, one "collider" whose on-air time overlaps a telemetry
+# batch. If lockups start right after colliders, collisions are the trigger.
+T11_PROBE_MS = 110
+T11_EVERY = 10
+T11_CONFIGS = {"t11a": 70, "t11b": 140}   # collider delay ms (70: overlaps the next batch, 140: the one after)
+T11_LOCK_RUN = 5                          # this many failed probes in a row = locked
+
+
+def run_t11(args, name):
+    collider = T11_CONFIGS[name] if args.delay is None else args.delay
+    every = args.reps if args.reps and args.reps > 1 else T11_EVERY
+    run_t10(args, args.name or name, [T11_PROBE_MS], duration=args.duration or 300,
+            delay_fn=lambda i: collider if i % every == every - 1 else T11_PROBE_MS, analyze=False)
+    analyze_t11(args, args.name or name)
+
+
+def analyze_t11(args, name):
+    analyze_t10(args, name)  # per-delay table: probes vs colliders
+    writes, reads, _ = load_csv(os.path.join(LOGS, f"{name}_raw.csv"))
+    cmd_w = [w for w in writes if w["tag"]["dir"] == "cmd"]
+    probe_d = T11_PROBE_MS
+    got = {f for f, _, _ in parse_stream(reads["TX"], CMD_LEN)[0]}
+    cmds = [(w["t_start"], w["tag"]["delay_ms"] != probe_d, w["data"][len(HDR_TO_CAR):] in got) for w in cmd_w]
+    # PC-module reboots
+    buf, ts = b"", []
+    for t, d in reads["RX"]:
+        buf += d
+        ts += [t] * len(d)
+    boots, i = [], buf.find(b"Power on")
+    while i >= 0:
+        boots.append(ts[i])
+        i = buf.find(b"Power on", i + 1)
+    car_boots = b"".join(d for _, d in reads["TX"]).count(b"Power on")
+    # lockup onsets: a delivered probe followed by >= T11_LOCK_RUN failed probes in a row
+    probes = [(k, c) for k, c in enumerate(cmds) if not c[1]]
+    onsets = []
+    j = 0
+    while j < len(probes):
+        k, (t, _, ok) = probes[j]
+        if not ok and j > 0 and probes[j - 1][1][2]:
+            run = 0
+            while j + run < len(probes) and not probes[j + run][1][2]:
+                run += 1
+            if run >= T11_LOCK_RUN:
+                k_prev = probes[j - 1][0]                         # last good probe
+                between = cmds[k_prev + 1:k]                       # commands between last good and first bad probe
+                last_good_t = probes[j - 1][1][0]
+                boot_after = next((b for b in boots if b > t), None)
+                onsets.append({
+                    "t_first_bad_probe": round(t, 2),
+                    "collider_between": any(c[1] for c in between),
+                    "commands_between": len(between),
+                    "s_from_last_good_to_reboot": round(boot_after - last_good_t, 1) if boot_after else None,
+                    "failed_probes_in_row": run})
+            j += run
+            continue
+        j += 1
+    # control: how often a collider is followed by working probes (no lockup)
+    coll_idx = [k for k, c in enumerate(cmds) if c[1]]
+    harmless = 0
+    for k in coll_idx:
+        nxt = [c for c in cmds[k + 1:k + 1 + T11_LOCK_RUN] if not c[1]]
+        if len(nxt) == T11_LOCK_RUN and all(c[2] for c in nxt):
+            harmless += 1
+    s = {"probe_delay_ms": probe_d, "colliders": len(coll_idx),
+         "collider_delivered": sum(c[2] for c in cmds if c[1]),
+         "probes": len(probes), "probes_delivered": sum(c[1][2] for c in probes),
+         "pc_reboots_s": [round(b, 1) for b in boots], "car_reboots": car_boots,
+         "lockups": onsets,
+         "lockups_right_after_collider": sum(o["collider_between"] for o in onsets),
+         "colliders_followed_by_working_probes": harmless,
+         "chance_level": f"1 in {T11_EVERY} commands is a collider"}
+    lines = [f"T11 {name}: probes at {probe_d} ms, a collider every {T11_EVERY}th command",
+             f"  probes delivered {s['probes_delivered']}/{s['probes']}; colliders delivered "
+             f"{s['collider_delivered']}/{s['colliders']}",
+             f"  PC module 'Power on' at {s['pc_reboots_s']} s; car module 'Power on' lines: {car_boots}",
+             f"  lockups (>= {T11_LOCK_RUN} failed probes in a row after a good one): {len(onsets)}; "
+             f"started right after a collider: {s['lockups_right_after_collider']}"]
+    for o in onsets:
+        lines.append(f"    first bad probe at {o['t_first_bad_probe']} s, collider just before: {o['collider_between']}, "
+                     f"{o['failed_probes_in_row']} bad probes in a row, last good -> reboot {o['s_from_last_good_to_reboot']} s")
+    lines.append(f"  colliders followed by {T11_LOCK_RUN} working probes (no lockup): "
+                 f"{harmless} of {len(coll_idx)}")
+    with open(os.path.join(LOGS, f"{name}_lockups.json"), "w") as f:
+        json.dump(s, f, indent=1)
+    with open(os.path.join(LOGS, f"{name}_lockups.txt"), "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
 # --------------------------------------------------------------------------- CLI
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("action", choices=["run", "analyze"])
     p.add_argument("test", choices=["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8",
-                                    "t9", "t9a", "t9b", "t9c", "t9d", "t10", "t10s"])
+                                    "t9", "t9a", "t9b", "t9c", "t9d", "t10", "t10s",
+                                    "t11", "t11a", "t11b"])
     p.add_argument("--tx", default="COM8", help="car-side module (MAC 0a,02)")
     p.add_argument("--rx", default="COM9", help="PC-side module (MAC 0a,01)")
     p.add_argument("--gap-ms", type=float, default=5.0, help="arrival-group gap threshold (default 5 ms)")
@@ -966,7 +1060,7 @@ def main():
     p.add_argument("--pauses", default=None, help="t2/t5: comma-separated pauses in ms (overrides default)")
     p.add_argument("--configs", default=None, help="t8: e.g. 3x214,2x143 (packets per write x period ms)")
     p.add_argument("--delays", default=None, help="t10: comma-separated command delays in ms (default 70-150)")
-    p.add_argument("--delay", type=int, default=None, help="t10s: command delay in ms")
+    p.add_argument("--delay", type=int, default=None, help="t10s: command delay in ms; t11a/t11b: collider delay in ms")
     p.add_argument("--no-soak", action="store_true", help="t10: sweep only, skip the soak at the best delay")
     args = p.parse_args()
     global T1_SIZES, T2_PAUSES_MS, T5_PAUSES_MS, T8_CONFIGS
@@ -980,7 +1074,7 @@ def main():
     os.makedirs(LOGS, exist_ok=True)
     t = args.test
     if args.reps is None:
-        args.reps = {"t1": 5, "t2": 10, "t5": 20, "t7": 5}.get(t, 1)
+        args.reps = {"t1": 5, "t2": 10, "t5": 20, "t7": 5, "t10": 40}.get(t, 1)
     if t == "t0" and args.duration is None:
         args.duration = 10
     if t.startswith("t9"):
@@ -994,6 +1088,18 @@ def main():
                 run_t9(args, name)
             else:
                 analyze_t9(args, name)
+        return
+    if t.startswith("t11"):
+        tests = ["t11a", "t11b"] if t == "t11" else [t]
+        if t == "t11":
+            args.name = None
+        for i, name in enumerate(tests):
+            if args.action == "run":
+                if i:
+                    time.sleep(2.0)
+                run_t11(args, name)
+            else:
+                analyze_t11(args, args.name or name)
         return
     if t in ("t10", "t10s"):
         if args.action == "analyze":

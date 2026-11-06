@@ -1,0 +1,32 @@
+t11a: sent 713 commands and 4500 telemetry packets (0 batches skipped: command would have been late or too close to the previous one)
+raw log: C:\Git\USC-Communications-Systems\2025-2026\Lora-Code\tools\lora_framing_test\logs\t11a_raw.csv
+T10 t11a: commands sent a fixed delay after a telemetry batch arrives (car: 3 x 64 B every 200 ms; command after every 2nd batch)
+  commands: sent 713, delivered 642
+  delay ms  sent  delivered      telemetry writes lost around  lat p50/p95 ms   actual delay p50/max   ms since car write
+        70    71     0 (  0.0%)    71 of 142  ( 50.0%)      None/None     70.03/70.25          119.2
+       110   642   642 (100.0%)     1 of 1284 (  0.1%)      128.5/128.76     110.03/123.59          159.2
+  best delay: 110 ms (delays within 2.5 points of the best score: [110])
+  telemetry: 1429 of 1500 writes fully received; lost near a command 71, lost with no command near 0 of 77; bad-CRC candidates 0, bytes skipped 0
+  batch arrival after its car write started, ms: {'p5': 249.02, 'p50': 249.16, 'p95': 249.39, 'max': 263.54}
+  commands written >2 ms late: 4; car port 'channel Error' lines: 0
+T11 t11a: probes at 70 ms, a collider every 10th command
+  probes delivered 0/71; colliders delivered 642/642
+  PC module 'Power on' at [] s; car module 'Power on' lines: 0
+  lockups (>= 5 failed probes in a row after a good one): 0; started right after a collider: 0
+  colliders followed by 5 working probes (no lockup): 0 of 642
+t11b: sent 712 commands and 4500 telemetry packets (0 batches skipped: command would have been late or too close to the previous one)
+raw log: C:\Git\USC-Communications-Systems\2025-2026\Lora-Code\tools\lora_framing_test\logs\t11b_raw.csv
+T10 t11b: commands sent a fixed delay after a telemetry batch arrives (car: 3 x 64 B every 200 ms; command after every 2nd batch)
+  commands: sent 712, delivered 641
+  delay ms  sent  delivered      telemetry writes lost around  lat p50/p95 ms   actual delay p50/max   ms since car write
+       110   641   641 (100.0%)     0 of 1282 (  0.0%)      128.54/128.86     110.03/122.57          159.22
+       140    71     0 (  0.0%)    71 of 142  ( 50.0%)      None/None     140.03/140.23          189.22
+  best delay: 110 ms (delays within 2.5 points of the best score: [110])
+  telemetry: 1429 of 1500 writes fully received; lost near a command 71, lost with no command near 0 of 78; bad-CRC candidates 0, bytes skipped 0
+  batch arrival after its car write started, ms: {'p5': 249.04, 'p50': 249.18, 'p95': 249.43, 'max': 255.48}
+  commands written >2 ms late: 1; car port 'channel Error' lines: 0
+T11 t11b: probes at 110 ms, a collider every 10th command
+  probes delivered 641/641; colliders delivered 0/71
+  PC module 'Power on' at [] s; car module 'Power on' lines: 0
+  lockups (>= 5 failed probes in a row after a good one): 0; started right after a collider: 0
+  colliders followed by 5 working probes (no lockup): 70 of 71

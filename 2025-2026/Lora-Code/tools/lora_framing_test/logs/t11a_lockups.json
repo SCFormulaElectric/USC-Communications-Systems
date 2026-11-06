@@ -1,0 +1,13 @@
+{
+ "probe_delay_ms": 110,
+ "colliders": 71,
+ "collider_delivered": 0,
+ "probes": 642,
+ "probes_delivered": 642,
+ "pc_reboots_s": [],
+ "car_reboots": 0,
+ "lockups": [],
+ "lockups_right_after_collider": 0,
+ "colliders_followed_by_working_probes": 70,
+ "chance_level": "1 in 10 commands is a collider"
+}

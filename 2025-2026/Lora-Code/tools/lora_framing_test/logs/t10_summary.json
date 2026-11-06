@@ -1,0 +1,238 @@
+{
+ "commands": {
+  "sent": 9,
+  "delivered": 1
+ },
+ "by_delay": {
+  "70": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 70.03,
+   "actual_delay_max_ms": 70.03,
+   "phase_p50_ms": 119.27
+  },
+  "80": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 1,
+   "telemetry_loss_pct_around": 50.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 80.03,
+   "actual_delay_max_ms": 80.03,
+   "phase_p50_ms": 129.2
+  },
+  "90": {
+   "sent": 1,
+   "delivered": 1,
+   "pct": 100.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": 136.58,
+   "lat_p95_ms": 136.58,
+   "actual_delay_p50_ms": 90.04,
+   "actual_delay_max_ms": 90.04,
+   "phase_p50_ms": 139.23
+  },
+  "100": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 100.03,
+   "actual_delay_max_ms": 100.03,
+   "phase_p50_ms": 149.22
+  },
+  "110": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 110.03,
+   "actual_delay_max_ms": 110.03,
+   "phase_p50_ms": 159.23
+  },
+  "120": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 120.03,
+   "actual_delay_max_ms": 120.03,
+   "phase_p50_ms": 169.29
+  },
+  "130": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 130.03,
+   "actual_delay_max_ms": 130.03,
+   "phase_p50_ms": 179.13
+  },
+  "140": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 1,
+   "telemetry_loss_pct_around": 50.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 140.05,
+   "actual_delay_max_ms": 140.05,
+   "phase_p50_ms": 189.6
+  },
+  "150": {
+   "sent": 1,
+   "delivered": 0,
+   "pct": 0.0,
+   "telemetry_writes_lost_around": 0,
+   "telemetry_loss_pct_around": 0.0,
+   "lat_p50_ms": null,
+   "lat_p95_ms": null,
+   "actual_delay_p50_ms": 150.03,
+   "actual_delay_max_ms": 150.03,
+   "phase_p50_ms": 199.31
+  }
+ },
+ "best_delay_ms": 90,
+ "near_best": [
+  90
+ ],
+ "telemetry": {
+  "writes": 25,
+  "writes_ok": 23,
+  "lost_near_a_command": 2,
+  "lost_with_no_command_near": 0,
+  "writes_with_no_command_near": 7,
+  "bad_crc_candidates": 2,
+  "bytes_skipped": 128
+ },
+ "batch_arrival_after_car_write_ms": {
+  "p5": 249.19,
+  "p50": 249.26,
+  "p95": 249.55,
+  "max": 249.55
+ },
+ "late_commands_over_2ms": 0,
+ "car_port_channel_errors": 0,
+ "rows": [
+  {
+   "cseq": 0,
+   "delay_ms": 130,
+   "actual_delay_ms": 130.03,
+   "late_ms": 0.02,
+   "phase_ms": 179.13,
+   "arrival_after_write_ms": 249.26,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 1,
+   "delay_ms": 140,
+   "actual_delay_ms": 140.05,
+   "late_ms": 0.04,
+   "phase_ms": 189.6,
+   "arrival_after_write_ms": 249.55,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 1
+  },
+  {
+   "cseq": 2,
+   "delay_ms": 90,
+   "actual_delay_ms": 90.04,
+   "late_ms": 0.03,
+   "phase_ms": 139.23,
+   "arrival_after_write_ms": 249.2,
+   "delivered": true,
+   "latency_ms": 136.58,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 3,
+   "delay_ms": 80,
+   "actual_delay_ms": 80.03,
+   "late_ms": 0.02,
+   "phase_ms": 129.2,
+   "arrival_after_write_ms": 249.21,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 1
+  },
+  {
+   "cseq": 4,
+   "delay_ms": 110,
+   "actual_delay_ms": 110.03,
+   "late_ms": 0.02,
+   "phase_ms": 159.23,
+   "arrival_after_write_ms": 249.2,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 5,
+   "delay_ms": 70,
+   "actual_delay_ms": 70.03,
+   "late_ms": 0.02,
+   "phase_ms": 119.27,
+   "arrival_after_write_ms": 249.3,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 6,
+   "delay_ms": 150,
+   "actual_delay_ms": 150.03,
+   "late_ms": 0.02,
+   "phase_ms": 199.31,
+   "arrival_after_write_ms": 249.28,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 7,
+   "delay_ms": 120,
+   "actual_delay_ms": 120.03,
+   "late_ms": 0.02,
+   "phase_ms": 169.29,
+   "arrival_after_write_ms": 249.28,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  },
+  {
+   "cseq": 8,
+   "delay_ms": 100,
+   "actual_delay_ms": 100.03,
+   "late_ms": 0.02,
+   "phase_ms": 149.22,
+   "arrival_after_write_ms": 249.19,
+   "delivered": false,
+   "latency_ms": null,
+   "telemetry_lost_around": 0
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+T10 t10_reps40: commands sent a fixed delay after a telemetry batch arrives (car: 3 x 64 B every 200 ms; command after every 2nd batch)
+  commands: sent 360, delivered 3
+  delay ms  sent  delivered      telemetry writes lost around  lat p50/p95 ms   actual delay p50/max   ms since car write
+        70    40     0 (  0.0%)     0 of 80   (  0.0%)      None/None     70.03/70.35          119.17
+        80    40     0 (  0.0%)     3 of 80   (  3.8%)      None/None     80.03/80.22          129.18
+        90    40     2 (  5.0%)     0 of 80   (  0.0%)      136.59/136.62     90.03/90.13          139.17
+       100    40     0 (  0.0%)     4 of 80   (  5.0%)      None/None     100.03/100.29          149.24
+       110    40     1 (  2.5%)     0 of 80   (  0.0%)      128.58/128.58     110.03/131.16          159.21
+       120    40     0 (  0.0%)     0 of 80   (  0.0%)      None/None     120.03/120.15          169.2
+       130    40     0 (  0.0%)     0 of 80   (  0.0%)      None/None     130.03/130.16          179.23
+       140    40     0 (  0.0%)     1 of 80   (  1.2%)      None/None     140.03/140.95          189.2
+       150    40     0 (  0.0%)     1 of 80   (  1.2%)      None/None     150.03/153.26          199.17
+  best delay: 110 ms (delays within 2.5 points of the best score: [90, 110])
+  telemetry: 719 of 806 writes fully received; lost near a command 9, lost with no command near 78 of 90; bad-CRC candidates 6, bytes skipped 404
+  batch arrival after its car write started, ms: {'p5': 249.02, 'p50': 249.16, 'p95': 249.4, 'max': 261.21}
+  commands written >2 ms late: 2; car port 'channel Error' lines: 0
